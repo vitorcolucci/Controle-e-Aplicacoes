@@ -1,0 +1,209 @@
+import control as clt
+import numpy as np
+import matplotlib.pyplot as plt
+import sympy as sy
+import scipy as sci
+import sympy.physics.control as syp
+from sympy import *
+from array import *
+
+init_printing()
+
+
+# Cad=symbols('Cad')
+# Rad=symbols('Rad')
+# Cvd=symbols('Cvd')
+# Rvd=symbols('Rvd')
+# Ccp=symbols('Ccp')
+# Rcp=symbols('Rcp')
+# Lcp=symbols('Lcp')
+# Cae=symbols('Cae')
+# Rae=symbols('Rae')
+# Cve=symbols('Cve')
+# Rve=symbols('Rve')
+# Ccs=symbols('Ccs')
+# Rcs=symbols('Rcs')
+# Lcs=symbols('Lcs')
+s=symbols('s')
+
+Ccp, Lcp, Rcp = 20, 0.0001, 0.1
+Ccs, Lcs, Rcs = 120, 0.0001, 0.2
+Cad, Cae = 3, 2
+
+def Condição (R_ad, C_vd, R_vd, R_ae, C_ve, R_ve):
+    Rad, Cvd, Rvd = R_ad, C_vd, R_vd
+    Rae, Cve, Rve = R_ae, C_ve, R_ve
+    
+    return Rad, Cvd, Rvd, Rae, Cve, Rve
+
+def A_cond (Rad, Cvd, Rvd, Rae, Cve, Rve):
+    A=np.array([
+	[-1/(Cad*Rad),1/(Rad*Cvd),0,0,0,0,-1],
+	[1/(Cad*Rad),-1/(Rvd*Cvd)-1/(Rad*Cvd),0,0,1/(Rvd*Ccp),0,0],
+	[0,0,-1/(Cae*Rae),1/(Rae*Cve),0,-1,0],
+	[-1/(Ccs*Rve),-1/(Ccs*Rve),-1/(Ccs*Rve)+1/(Cae*Rae),-1/(Ccs*Rve)-1/(Rve*Cve)-1/(Rae*Cve),-1/(Ccs*Rve),0,0],
+	[0,1/(Rvd*Cvd),0,0,-1/(Rvd*Ccp),1,0],
+	[0,0,1/(Cae*Lcp),0,-1/(Ccp*Lcp),-Rcp/Lcp,0],
+	[1/(Cad*Lcs)+1/(Ccs*Lcs),1/(Ccs*Lcs),1/(Ccs*Lcs),1/(Ccs*Lcs),1/(Ccs*Lcs),0,-Rcs/Lcs]])
+    return A
+
+def B_cond_st (Rad, Cvd, Rvd, Rae, Cve, Rve):
+    B=np.array([
+    [-1/Rad,0,0,0],
+    [1/Rad,-1/Rvd,0,0],
+    [0,0,-1/Rae,0],
+    [0,0,1/Rae,-1/Rve],
+    [0,1/Rvd,0,0],
+    [0,0,0,0],
+    [0,0,0,0]
+    ])
+    return B
+
+def B_cond (Rad, Cvd, Rvd, Rae, Cve, Rve):
+    B=np.array([
+    [-1/Rad,0,0],
+    [1/Rad,-1/Rvd,0],
+    [0,0,0],
+    [0,0,-1/Rve],
+    [0,1/Rvd,0],
+    [0,0,0],
+    [0,0,0]
+    ])
+    return B
+
+def E_cond (Rad, Cvd, Rvd, Rae, Cve, Rve):
+    E=np.array([
+    [-1/Rad],
+    [1/Rad],
+    [0],
+    [0],
+    [0],
+    [0],
+    [0]
+    ])
+    return E
+
+
+C=np.array([
+    [1,0,0,0,0,0,0],
+    [0,1,0,0,0,0,0],
+    [0,0,1,0,0,0,0]])
+
+D=np.array([
+    [0,0,0],
+    [0,0,0],
+    [0,0,0]])
+
+# Função de integração para definição dos valores médios de complacência
+
+def Compl(TC, c_vd = 15, c_vs = 0.7):
+    bpm = 80
+    Tl = 60/bpm
+    zeit = TC % Tl
+    tc = 0.2*Tl
+    tr = 0.23*Tl
+    if 0 <= zeit < tc:
+        f = 0.5*(1-np.cos(np.pi*zeit/tc))
+    elif tc <= zeit < tc + tr:
+        f = 0.5*(1+np.cos(np.pi*(zeit-tc)/tr))
+    else:
+        f = 0
+    c = 1/(1/c_vd+f*(1/c_vs-1/c_vd))
+    return c
+
+t_batimento = 0.75                                   # intervalo de tempo de um batimento cardíaco em segundos
+steps = 100000                                       # passos
+t_compl = np.linspace(0, t_batimento, steps)         
+C_vd = [Compl(x, 15, 0.7) for x in t_compl]          #cálculo dos valores da complacência do ventrículo direito durante um batimento cardíaco
+C_ve = [Compl(x, 10, 0.3) for x in t_compl]          #cálculo dos valores da complacência do ventrículo esquerdo durante um batimento cardíaco
+
+ti = 0.0375
+tf = 0.15
+Int = sci.integrate.quad(Compl,ti,tf)
+Cm = Int[0]/(tf-ti)
+
+
+# Condição 1
+Rad, Cvd, Rvd, Rae, Cve, Rve = Condição(100, 0.7, 100, 100, 0.3, 100)
+A1 = A_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)
+B1 = B_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)    
+sys = clt.ss(A1,B1,C,D)
+G1 = clt.tf(sys)
+pp1 = clt.poles(sys)
+
+# Condição 2
+Rad, Cvd, Rvd, Rae, Cve, Rve = Condição(100, 15, 0.01, 100, 10, 0.02)
+A2 = A_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)
+B2 = B_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)    
+sys = clt.ss(A2,B2,C,D)
+G2 = clt.tf(sys)
+pp2 = clt.poles(sys)
+
+# Condição 3
+Rad, Cvd, Rvd, Rae, Cve, Rve = Condição(0.01, 15, 100, 0.02, 10, 100)
+A3 = A_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)
+B3 = B_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)    
+sys = clt.ss(A3,B3,C,D)
+G3 = clt.tf(sys)
+pp3 = clt.poles(sys)
+
+# Matrizes de controlabilidade e respectivos postos para as 3 condições avaliadas
+
+Q1 = clt.ctrb(A1,B1)
+Q2 = clt.ctrb(A2,B2)
+Q3 = clt.ctrb(A3,B3)
+
+pQ1, pQ2, pQ3 = np.linalg.matrix_rank(Q1,tol=0.001), np.linalg.matrix_rank(Q2,tol=0.001), np.linalg.matrix_rank(Q3,tol=0.001)
+
+
+O1 = clt.obsv(A1, C).transpose()
+O2 = clt.obsv(A2, C).transpose()
+O3 = clt.obsv(A3, C).transpose()
+
+pO1, pO2, pO3 = np.linalg.matrix_rank(O1,tol=0.01), np.linalg.matrix_rank(O2,tol=0.01), np.linalg.matrix_rank(O3,tol=0.001)
+
+#Alocação dos polos  
+
+tf1 = clt.ss2tf(A1,B1,C,D)
+tf2 = clt.ss2tf(A2,B2,C,D)
+tf3 = clt.ss2tf(A3,B3,C,D)
+
+pc1 = syp.TransferFunction(1, s**7 + 3000*s**6 + 2.009e+06*s**5 + 1.463e+07*s**4 + 2.024e+07*s**3 + 1.842e+06*s**2 + 3.73e+04*s + 19.33, s)
+pc2 = syp.TransferFunction(1, s**7 + 3017*s**6 + 2.06e+06*s**5 + 4.894e+07*s**4 + 3.874e+08*s**3 + 1.198e+09*s**2 + 1.143e+09*s + 7.883e+05, s)
+pc3 = syp.TransferFunction(1, s**7 + 3070*s**6 + 2.22e+06*s**5 + 1.584e+08*s**4 + 3.07e+09*s**3 + 4.25e+09*s**2 + 1.028e+09*s + 7.883e+05, s)
+
+P1 = clt.StateSpace(A1, B1, C, D).poles()  
+P2 = clt.StateSpace(A2, B2, C, D).poles()  
+P3 = clt.StateSpace(A3, B3, C, D).poles()  
+
+# syp.pole_zero_plot(pc1, pole_color='blue', pole_markersize=10, zero_color='orange', zero_markersize=7, grid=True, show_axes=True, show=True)
+# syp.pole_zero_plot(pc2, pole_color='blue', pole_markersize=10, zero_color='orange', zero_markersize=7, grid=True, show_axes=True, show=True)
+# syp.pole_zero_plot(pc3, pole_color='blue', pole_markersize=10, zero_color='orange', zero_markersize=7, grid=True, show_axes=True, show=True)
+
+fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(12, 6), dpi=400)
+
+axs[0].plot(P1.real, P1.imag, 'blue', marker='x', lw=0)
+axs[0].grid(color='darkgrey', lw=0.5)
+axs[0].set_xscale('symlog')
+axs[0].legend(['Situação 1'], loc='upper right', shadow=True)
+axs[0].set_title(r'Polos do sistema nas três condições', fontfamily = 'sans-serif', fontsize = 'large')
+
+axs[1].plot(P1.real, P1.imag, 'green', marker='x', lw=0)
+axs[1].set_ylabel(r'Imaginary Axis')
+axs[1].set_xscale('symlog')
+axs[1].legend(['Situação 2'], loc='upper right', shadow=True)
+axs[1].grid(color='darkgrey', lw=0.5)
+
+axs[2].plot(P1.real, P1.imag, 'red', marker='x', lw=0)
+axs[2].set_xlabel(r'Real Axis')
+axs[2].set_xscale('symlog')
+axs[2].legend(['Situação 3'], loc='upper right', shadow=True)
+axs[2].grid(color='darkgrey', lw=0.5)
+
+K1 = sci.signal.place_poles(A1,B1,P1).gain_matrix
+K2 = sci.signal.place_poles(A2,B2,P2).gain_matrix
+K3 = sci.signal.place_poles(A3,B3,P3).gain_matrix
+
+PA1 = sci.signal.place_poles(A1,B1,P1).computed_poles
+PA2 = sci.signal.place_poles(A2,B2,P2).computed_poles
+PA3 = sci.signal.place_poles(A2,B2,P2).computed_poles
