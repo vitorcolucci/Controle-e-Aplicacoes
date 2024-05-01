@@ -1,3 +1,8 @@
+"""
+Spyder Editor
+This is a temporary script file.
+"""
+
 import control as clt
 import numpy as np
 import matplotlib.pyplot as plt
@@ -127,25 +132,25 @@ Cm = Int[0]/(tf-ti)
 Rad, Cvd, Rvd, Rae, Cve, Rve = Condição(100, 0.7, 100, 100, 0.3, 100)
 A1 = A_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)
 B1 = B_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)    
-sys = clt.ss(A1,B1,C,D)
-G1 = clt.tf(sys)
-pp1 = clt.poles(sys)
+sys1 = clt.ss(A1,B1,C,D)
+G1 = clt.tf(sys1)
+pp1 = clt.poles(sys1)
 
 # Condição 2
 Rad, Cvd, Rvd, Rae, Cve, Rve = Condição(100, 15, 0.01, 100, 10, 0.02)
 A2 = A_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)
 B2 = B_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)    
-sys = clt.ss(A2,B2,C,D)
-G2 = clt.tf(sys)
-pp2 = clt.poles(sys)
+sys2 = clt.ss(A2,B2,C,D)
+G2 = clt.tf(sys2)
+pp2 = clt.poles(sys2)
 
 # Condição 3
 Rad, Cvd, Rvd, Rae, Cve, Rve = Condição(0.01, 15, 100, 0.02, 10, 100)
 A3 = A_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)
 B3 = B_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)    
-sys = clt.ss(A3,B3,C,D)
-G3 = clt.tf(sys)
-pp3 = clt.poles(sys)
+sys3 = clt.ss(A3,B3,C,D)
+G3 = clt.tf(sys3)
+pp3 = clt.poles(sys3)
 
 # Matrizes de controlabilidade e respectivos postos para as 3 condições avaliadas
 
@@ -180,25 +185,7 @@ P3 = clt.StateSpace(A3, B3, C, D).poles()
 # syp.pole_zero_plot(pc2, pole_color='blue', pole_markersize=10, zero_color='orange', zero_markersize=7, grid=True, show_axes=True, show=True)
 # syp.pole_zero_plot(pc3, pole_color='blue', pole_markersize=10, zero_color='orange', zero_markersize=7, grid=True, show_axes=True, show=True)
 
-fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(12, 6), dpi=400)
-
-axs[0].plot(P1.real, P1.imag, 'blue', marker='x', lw=0)
-axs[0].grid(color='darkgrey', lw=0.5)
-axs[0].set_xscale('symlog')
-axs[0].legend(['Situação 1'], loc='upper right', shadow=True)
-axs[0].set_title(r'Polos do sistema nas três condições', fontfamily = 'sans-serif', fontsize = 'large')
-
-axs[1].plot(P1.real, P1.imag, 'green', marker='x', lw=0)
-axs[1].set_ylabel(r'Imaginary Axis')
-axs[1].set_xscale('symlog')
-axs[1].legend(['Situação 2'], loc='upper right', shadow=True)
-axs[1].grid(color='darkgrey', lw=0.5)
-
-axs[2].plot(P1.real, P1.imag, 'red', marker='x', lw=0)
-axs[2].set_xlabel(r'Real Axis')
-axs[2].set_xscale('symlog')
-axs[2].legend(['Situação 3'], loc='upper right', shadow=True)
-axs[2].grid(color='darkgrey', lw=0.5)
+fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(12, 6), dpi=300)
 
 K1 = sci.signal.place_poles(A1,B1,P1).gain_matrix
 K2 = sci.signal.place_poles(A2,B2,P2).gain_matrix
@@ -207,3 +194,40 @@ K3 = sci.signal.place_poles(A3,B3,P3).gain_matrix
 PA1 = sci.signal.place_poles(A1,B1,P1).computed_poles
 PA2 = sci.signal.place_poles(A2,B2,P2).computed_poles
 PA3 = sci.signal.place_poles(A2,B2,P2).computed_poles
+
+axs[0].plot(P1.real, P1.imag, 'navy', marker='x', markersize = 8, lw=0)
+axs[0].plot(PA1.real, PA1.imag, 'dodgerblue', marker='o', markersize = 4, lw=0)
+axs[0].grid(color='darkgrey', lw=0.5)
+axs[0].set_xscale('symlog')
+axs[0].legend(['Polos 1', 'Polos alocados 1'], loc='upper right', shadow=True)
+axs[0].set_title(r'Polos do sistema nas três condições', fontfamily = 'sans-serif', fontsize = 'large')
+
+axs[1].plot(P2.real, P2.imag, 'darkgreen', marker='x',markersize = 8, lw=0)
+axs[1].plot(PA2.real, PA2.imag, 'lime', marker='o', markersize = 4, lw=0)
+axs[1].set_ylabel(r'Imaginary Axis')
+axs[1].set_xscale('symlog')
+axs[1].legend(['Polos 2','Polos alocados 2'], loc='upper right', shadow=True)
+axs[1].grid(color='darkgrey', lw=0.5)
+
+axs[2].plot(P3.real, P3.imag, 'darkred', marker='x', markersize = 8, lw=0)
+axs[2].plot(PA3.real, PA3.imag, 'red', marker='o', markersize = 4, lw=0)
+axs[2].set_xlabel(r'Real Axis')
+axs[2].set_xscale('symlog')
+axs[2].legend(['Polos 3','Polos alocados 3'], loc='upper right', shadow=True)
+axs[2].grid(color='darkgrey', lw=0.5)
+
+#Simulação inicial
+
+tf = 50                    # [s]
+steps = 100000             # passos
+t = np.linspace(0, tf, steps)
+
+sys1_ = clt.ss(A1-np.dot(B1,K1),B1,C,D)
+sys2_ = clt.ss(A2-np.dot(B2,K2),B2,C,D)
+sys3_ = clt.ss(A3-np.dot(B3,K3),B3,C,D)
+
+T1, out1 = clt.step_response(sys1, T=t)
+T1_, out1_ = clt.step_response(sys1_, T=t)
+
+T2, out2 = clt.step_response(sys2, T=t)
+T2_, out2_ = clt.step_response(sys2_, T=t)
