@@ -592,29 +592,6 @@ fig.legend(['Sistema em malha aberta', 'Sistema com polos alocados','Síntese po
 
 # fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
 
-# axs[0].plot(P1.real, P1.imag, 'navy', marker='x', markersize = 8, lw=0)
-# axs[0].plot(PA1.real, PA1.imag, 'dodgerblue', marker='o', markersize = 4, lw=0)
-# axs[0].grid(color='darkgrey', lw=0.5)
-# axs[0].set_xscale('symlog')
-# axs[0].legend(['Polos 1', 'Polos alocados 1'], loc='upper right', shadow=False)
-# axs[0].set_title(r'Alocação de polos do sistema nas três condições', fontfamily = 'sans-serif', fontsize = 'large')
-
-# axs[1].plot(P2.real, P2.imag, 'darkgreen', marker='x',markersize = 8, lw=0)
-# axs[1].plot(PA2.real, PA2.imag, 'lime', marker='o', markersize = 4, lw=0)
-# axs[1].set_ylabel(r'Imaginary Axis')
-# axs[1].set_xscale('symlog')
-# axs[1].legend(['Polos 2','Polos alocados 2'], loc='upper right', shadow=False)
-# axs[1].grid(color='darkgrey', lw=0.5)
-
-# axs[2].plot(P3.real, P3.imag, 'darkred', marker='x', markersize = 8, lw=0)
-# axs[2].plot(PA3.real, PA3.imag, 'red', marker='o', markersize = 4, lw=0)
-# axs[2].set_xlabel(r'Real Axis')
-# axs[2].set_xscale('symlog')
-# axs[2].legend(['Polos 3','Polos alocados 3'], loc='upper right', shadow=False)
-# axs[2].grid(color='darkgrey', lw=0.5)
-
-# fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
-
 # axs[0].plot(int_t1, x1[0], 'navy', lw=1.2)
 # axs[0].plot(int_t1, x1_[0], 'dodgerblue', lw=1.2)
 # axs[0].grid(color='darkgrey', lw=0.5)
