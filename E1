@@ -513,3 +513,185 @@ axs[2].set_xlim(0, 4)
 axs[2].set_xlabel(r'tempo [s]')
 
 fig.legend(['Sistema em malha aberta', 'Sistema com polos alocados','Síntese por LQR'], loc='center right', shadow=True, fontsize = 9)
+
+#Simulação inicial - Resposta à entrada degrau
+
+# frac1 = 0.05                      #período relativo de contração isovolumétrica
+# t1 = frac1*tf
+# steps1 = int(frac1*steps)
+# int_t1 = np.linspace(0,t1,steps1)
+
+# frac2 = 0.15                      #período relativo de ejeção acelerada
+# t2 = frac2*tf
+# steps2 = int(frac2*steps)
+# int_t2 = np.linspace(t1,t2+t1,steps2)
+
+# frac3 = 0.12                      #período relativo de enchimento reduzido dos ventrículos
+# t3 = frac3*tf
+# steps3 = int(frac3*steps)
+# int_t3 = np.linspace(tf-t3,tf,steps3)
+
+# A1_ = A1-np.dot(B1,K1)
+# A2_ = A2-np.dot(B2,K2)
+# A3_ = A3-np.dot(B3,K3)
+
+# Vec_Pvd = np.array([P_v(T, 5, 22, 80) for T in t])
+# Vec_Pve = np.array([P_v(T, 10, 120, 80) for T in t])
+# Vec_Pad = np.array([P_a(T, 5, 8, 80) for T in t])
+# Vec_Pae = np.array([P_a(T, 10, 20, 80) for T in t])
+# Vec_Pcp = np.array([P_cp(T, 11, 19, 80) for T in t])
+# Vec_Pcs = np.array([P_cs(T, 80, 115, 80) for T in t])
+
+# Vec_Pad1 = np.array([P_a(T, 5, 8, 80) for T in int_t1])
+# Vec_Pvd1 = np.array([P_v(T, 5, 22, 80) for T in int_t1])
+# Vec_Pcp1 = np.array([P_cp(T, 11, 19, 80) for T in int_t1])
+# Vec_Pve1 = np.array([P_v(T, 10, 120, 80) for T in int_t1])
+# Vec_Pcs1 = np.array([P_cs(T, 80, 115, 80) for T in int_t1])
+# Vec_Pad2 = np.array([P_a(T, 5, 8, 80) for T in int_t2])
+# Vec_Pvd2 = np.array([P_v(T, 5, 22, 80) for T in int_t2])
+# Vec_Pcp2 = np.array([P_cp(T, 11, 19, 80) for T in int_t2])
+# Vec_Pve2 = np.array([P_v(T, 10, 120, 80) for T in int_t2])
+# Vec_Pcs2 = np.array([P_cs(T, 80, 115, 80) for T in int_t2])
+# Vec_Pad3 = np.array([P_a(T, 5, 8, 80) for T in int_t3])
+# Vec_Pvd3 = np.array([P_v(T, 5, 22, 80) for T in int_t3])
+# Vec_Pcp3 = np.array([P_cp(T, 11, 19, 80) for T in int_t3])
+# Vec_Pve3 = np.array([P_v(T, 10, 120, 80) for T in int_t3])
+# Vec_Pcs3 = np.array([P_cs(T, 80, 115, 80) for T in int_t3])
+
+# Delta_Pad1 = Vec_Pad1 - Vec_Pvd1
+# Delta_Pvd1 = Vec_Pvd1 - Vec_Pcp1
+# Delta_Pve1 = Vec_Pve1 - Vec_Pcs1
+# Delta_Pad2 = Vec_Pad2 - Vec_Pvd2
+# Delta_Pvd2 = Vec_Pvd2 - Vec_Pcp2
+# Delta_Pve2 = Vec_Pve2 - Vec_Pcs2
+# Delta_Pad3 = Vec_Pad3 - Vec_Pvd3
+# Delta_Pvd3 = Vec_Pvd3 - Vec_Pcp3
+# Delta_Pve3 = Vec_Pve3 - Vec_Pcs3
+
+# # U1_real = [Delta_Pad1, Delta_Pvd1, Delta_Pve1, q0*np.ones(steps1)]
+# # U2_real = [Delta_Pad2, Delta_Pvd2, Delta_Pve2, q0*np.ones(steps2)]
+# # U3_real = [Delta_Pad3, Delta_Pvd3, Delta_Pve3, q0*np.ones(steps3)]
+
+# #X01 = [32.8208014 ,  128.97931383,   39.65605596,  138.07347741, 687.11288571, -145.94694028, -127.52152711]
+# X01_ = X01
+
+# T1, out1, x1 = clt.forced_response(sys1, T=int_t1, X0=X01, U=U1_real, return_x = True)
+# T1_, out1_, x1_ = clt.forced_response(sys1_, T=int_t1, X0=X01_, U=U1_real, return_x = True)
+
+# #X02 = x1[:,steps1-1]
+# #X02_ = x1_[:,steps1-1]
+
+# T2, out2, x2 = clt.forced_response(sys2, T=int_t2, X0=X02, U=U2_real, return_x = True)
+# T2_, out2_, x2_ = clt.forced_response(sys2_, T=int_t2, X0=X02_, U=U2_real, return_x = True)
+
+# #X03 = [33.9064531 ,  116.14747051,   39.99517533,  123.84961663, 700.88055257, -150.63347473, -126.1929136 ]
+# X03_ = X03
+
+# T3, out3, x3 = clt.forced_response(sys3, T=int_t3, X0=X03, U=U3_real, return_x = True)
+# T3_, out3_, x3_ = clt.forced_response(sys3_, T=int_t3, X0=X03_, U=U3_real, return_x = True)
+
+# fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
+
+# axs[0].plot(P1.real, P1.imag, 'navy', marker='x', markersize = 8, lw=0)
+# axs[0].plot(PA1.real, PA1.imag, 'dodgerblue', marker='o', markersize = 4, lw=0)
+# axs[0].grid(color='darkgrey', lw=0.5)
+# axs[0].set_xscale('symlog')
+# axs[0].legend(['Polos 1', 'Polos alocados 1'], loc='upper right', shadow=False)
+# axs[0].set_title(r'Alocação de polos do sistema nas três condições', fontfamily = 'sans-serif', fontsize = 'large')
+
+# axs[1].plot(P2.real, P2.imag, 'darkgreen', marker='x',markersize = 8, lw=0)
+# axs[1].plot(PA2.real, PA2.imag, 'lime', marker='o', markersize = 4, lw=0)
+# axs[1].set_ylabel(r'Imaginary Axis')
+# axs[1].set_xscale('symlog')
+# axs[1].legend(['Polos 2','Polos alocados 2'], loc='upper right', shadow=False)
+# axs[1].grid(color='darkgrey', lw=0.5)
+
+# axs[2].plot(P3.real, P3.imag, 'darkred', marker='x', markersize = 8, lw=0)
+# axs[2].plot(PA3.real, PA3.imag, 'red', marker='o', markersize = 4, lw=0)
+# axs[2].set_xlabel(r'Real Axis')
+# axs[2].set_xscale('symlog')
+# axs[2].legend(['Polos 3','Polos alocados 3'], loc='upper right', shadow=False)
+# axs[2].grid(color='darkgrey', lw=0.5)
+
+# fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
+
+# axs[0].plot(int_t1, x1[0], 'navy', lw=1.2)
+# axs[0].plot(int_t1, x1_[0], 'dodgerblue', lw=1.2)
+# axs[0].grid(color='darkgrey', lw=0.5)
+# #axs[0].set_xscale('symlog')
+# axs[0].legend(['Vad', 'Vad_'], loc='lower right', shadow=False)
+# axs[0].set_title(r'Resposta do sistema na situação 1', fontfamily = 'sans-serif', fontsize = 'large')
+# #axs[0].set_xlim(0, 0.0375)
+
+# axs[1].plot(int_t1, x1[1], 'navy', lw=1.2)
+# axs[1].plot(int_t1, x1_[1], 'dodgerblue', lw=1.2)
+# axs[1].grid(color='darkgrey', lw=0.5)
+# #axs[1].set_xscale('symlog')
+# axs[1].legend(['Vvd', 'Vvd_'], loc='lower right', shadow=False)
+# #axs[1].set_xlim(0, 0.0375)
+
+# axs[2].plot(int_t1, x1[3], 'navy', lw=1.2)
+# axs[2].plot(int_t1, x1_[3], 'dodgerblue', lw=1.2)
+# axs[2].grid(color='darkgrey', lw=0.5)
+# #axs[2].set_xscale('symlog')
+# axs[2].legend(['Vve', 'Vve_'], loc='lower right', shadow=False)
+# #axs[2].set_xlim(0, 0.0375)
+      
+# plt.show()
+
+# fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
+
+# axs[0].plot(int_t2, x2[0], 'navy', lw=1.2)
+# axs[0].plot(int_t2, x2_[0], 'dodgerblue', lw=1.2)
+# axs[0].grid(color='darkgrey', lw=0.5)
+# #axs[0].set_xscale('symlog')
+# axs[0].legend(['Vad', 'Vad_'], loc='center right', shadow=False)
+# axs[0].set_title(r'Resposta do sistema na situação 2', fontfamily = 'sans-serif', fontsize = 'large')
+# #axs[0].set_xlim(0.0375, 0.15)
+# #axs[0].set_ylim(0, 15)
+
+# axs[1].plot(int_t2, x2[1], 'navy', lw=1.2)
+# axs[1].plot(int_t2, x2_[1], 'dodgerblue', lw=1.2)
+# axs[1].grid(color='darkgrey', lw=0.5)
+# #axs[1].set_xscale('symlog')
+# axs[1].legend(['Vvd', 'Vvd_'], loc='center right', shadow=False)
+# #axs[1].set_xlim(0.0375, 0.15)
+# #axs[1].set_ylim(-10, 15)
+
+# axs[2].plot(int_t2, x2[3], 'navy', lw=1.2)
+# axs[2].plot(int_t2, x2_[3], 'dodgerblue', lw=1.2)
+# axs[2].grid(color='darkgrey', lw=0.5)
+# #axs[2].set_xscale('symlog')
+# axs[2].legend(['Vve', 'Vve_'], loc='center right', shadow=False)
+# #axs[2].set_xlim(0.0375, 0.15)
+# #axs[2].set_ylim(-25, 25)
+
+# plt.show()
+
+# fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
+
+# axs[0].plot(int_t3, x3[0], 'navy', lw=1.2)
+# axs[0].plot(int_t3, x3_[0], 'dodgerblue', lw=1.2)
+# axs[0].grid(color='darkgrey', lw=0.5)
+# #axs[0].set_xscale('symlog')
+# axs[0].legend(['Vad', 'Vad_'], loc='lower right', shadow=False)
+# axs[0].set_title(r'Resposta do sistema na situação 3', fontfamily = 'sans-serif', fontsize = 'large')
+# #axs[0].set_xlim(0.66, 0.75)
+# #axs[0].set_ylim(-10, 10)
+
+# axs[1].plot(int_t3, x3[1], 'navy', lw=1.2)
+# axs[1].plot(int_t3, x3_[1], 'dodgerblue', lw=1.2)
+# axs[1].grid(color='darkgrey', lw=0.5)
+# #axs[1].set_xscale('symlog')
+# axs[1].legend(['Vvd', 'Vvd_'], loc='lower right', shadow=False)
+# #axs[1].set_xlim(0.66, 0.75)
+# #axs[1].set_ylim(-10, 30)
+
+# axs[2].plot(int_t3, x3[3], 'navy', lw=1.2)
+# axs[2].plot(int_t3, x3_[3], 'dodgerblue', lw=1.2)
+# axs[2].grid(color='darkgrey', lw=0.5)
+# #axs[2].set_xscale('symlog')
+# axs[2].legend(['Vve', 'Vve_'], loc='lower right', shadow=False)
+# ##axs[2].set_ylim(-2, 6)
+
+# plt.show()
