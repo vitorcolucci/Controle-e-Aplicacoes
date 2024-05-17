@@ -197,36 +197,43 @@ Cm = Int[0]/(tf-ti)
 q0 = 5400 
 
 # Condição 1
+
 Rad, Cvd, Rvd, Rae, Cve, Rve = Condição(100, 8.99, 100, 100, 5.18, 100)
 A1s = A_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)
 B1s = B_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)    
 E1s = E_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)
 sys1s = clt.ss(A1s,B1s,C,D)
 sys1st = clt.ss(A1s,E1s,C,D0)
+
 Rad, Cvd, Rvd, Rae, Cve, Rve = Condição(100, 15, 100, 100, 10, 100)
 A1d = A_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)
 B1d = B_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)    
 E1d = E_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)
 sys1d = clt.ss(A1d,B1d,C,D)
+sys1dt = clt.ss(A1d,E1d,C,D0)
 G1 = clt.tf(sys1s)
 pp1 = clt.poles(sys1s)
 
 # Condição 2
+
 Rad, Cvd, Rvd, Rae, Cve, Rve = Condição(100, 1.32, 0.01, 100, 0.58, 0.02)
 A2s = A_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)
 B2s = B_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)    
 E2s = E_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)
 sys2s = clt.ss(A2s,B2s,C,D)
 sys2st = clt.ss(A2s,E2s,C,D0)
+
 Rad, Cvd, Rvd, Rae, Cve, Rve = Condição(100, 15, 0.01, 100, 10, 0.02)
 A2d = A_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)
 B2d = B_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)    
 E2d = E_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)
 sys2d = clt.ss(A2d,B2d,C,D)
+sys2dt = clt.ss(A2d,E2d,C,D0)
 G2 = clt.tf(sys2s)
 pp2 = clt.poles(sys2s)
 
 # Condição 3
+
 Rad, Cvd, Rvd, Rae, Cve, Rve = Condição(0.01, 15, 100, 0.02, 10, 100)
 A3 = A_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)
 B3 = B_cond (Rad, Cvd, Rvd, Rae, Cve, Rve)    
@@ -262,7 +269,8 @@ P2 = clt.StateSpace(A2s, B2s, C, D).poles()
 P3 = clt.StateSpace(A3, B3, C, D).poles()  
 
 K1 = sci.signal.place_poles(A1d,B1d,P1,method='YT').gain_matrix
-K2 = sci.signal.place_poles(A2d,B2d,P2,method='YT').gain_matrix
+K2 = 0.395*sci.signal.place_poles(A2d,B2d,P2,method='YT').gain_matrix
+
 
 A1_ = A1d-np.dot(B1d,K1)
 A2_ = A2d-np.dot(B2d,K2)
@@ -296,7 +304,8 @@ sys1_ = clt.ss(A1_,E1d,C,D0)
 sys2_ = clt.ss(A2_,E2d,C,D0)
 
 steps_step = 10000
-t_step = np.linspace(0, 12, steps_step)
+tf = 40
+t_step = np.linspace(0, tf, steps_step)
 
 U1_step = [np.zeros(steps_step), np.zeros(steps_step), np.zeros(steps_step), np.zeros(steps_step), q0*np.ones(steps_step)]
 U2_step = [np.zeros(steps_step), np.zeros(steps_step), np.zeros(steps_step), np.zeros(steps_step), q0*np.ones(steps_step)]
@@ -308,6 +317,7 @@ T1_, out1_, x1_ = clt.forced_response(sys1_, T=t_step, X0=X01_, U=U1_step, retur
 X02_ = X02 = [37.52059196,  129.01860359,   44.67330408,  138.12876312, 682.06349792, -118.33202057, -119.51581545]
 T2, out2, x2 = clt.forced_response(sys2st, T=t_step, X0=X02, U=U2_step, return_x = True)
 T2_, out2_, x2_ = clt.forced_response(sys2_, T=t_step, X0=X02_, U=U2_step, return_x = True)
+T2d, out2d, x2d = clt.forced_response(sys2dt, T=t_step, X0=X02, U=U2_step, return_x = True)
 
 # X03_ = X03 = [33.9064531 ,  116.14747051,   39.99517533,  123.84961663, 700.88055257, -150.63347473, -126.1929136 ]
 
@@ -322,7 +332,7 @@ axs[0].plot(t_step, x1_[0], 'dodgerblue', lw=1.2)
 axs[0].grid(color='darkgrey', lw=0.5)
 axs[0].set_ylabel(r'Volume Ad [ml]')
 axs[0].set_title(r'Resposta do sistema na situação 1', fontfamily = 'sans-serif', fontsize = 'large')
-axs[0].set_xlim(0, 3)
+axs[0].set_xlim(0, 20)
 
 axs[1].plot(t_step, x1[1], 'navy', lw=1.2)
 axs[1].plot(t_step, x1_[1], 'dodgerblue', lw=1.2)
@@ -348,23 +358,26 @@ fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
 
 axs[0].plot(t_step, x2[0], 'navy', lw=1.2)
 axs[0].plot(t_step, x2_[0], 'dodgerblue', lw=1.2)
+axs[0].plot(t_step, x2d[0], 'red', lw=1.2)
 axs[0].grid(color='darkgrey', lw=0.5)
 axs[0].set_ylabel(r'Volume Ad [ml]')
 axs[0].set_title(r'Resposta do sistema na situação 2', fontfamily = 'sans-serif', fontsize = 'large')
-axs[0].set_xlim(0, 4)
+axs[0].set_xlim(0, tf)
 
 axs[1].plot(t_step, x2[1], 'navy', lw=1.2)
 axs[1].plot(t_step, x2_[1], 'dodgerblue', lw=1.2)
+axs[1].plot(t_step, x2d[1], 'red', lw=1.2)
 axs[1].grid(color='darkgrey', lw=0.5)
 axs[1].set_ylabel(r'Volume Vd [ml]')
-axs[1].set_xlim(0, 0.1)
+axs[1].set_xlim(0, tf)
 
 axs[2].plot(t_step, x2[3], 'navy', lw=1.2)
 axs[2].plot(t_step, x2_[3], 'dodgerblue', lw=1.2)
+axs[2].plot(t_step, x2d[3], 'red', lw=1.2)
 axs[2].grid(color='darkgrey', lw=0.5)
 axs[2].set_xlabel(r'tempo [s]')
 axs[2].set_ylabel(r'Volume Ve [ml]')
-axs[2].set_xlim(0, 0.1)
+axs[2].set_xlim(0, tf)
 
 # fig.legend(['Sistema em malha aberta', 'Sistema com polos alocados'], loc='center right', shadow=True, fontsize = 9)
 
