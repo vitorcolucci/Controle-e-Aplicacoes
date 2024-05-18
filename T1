@@ -178,16 +178,13 @@ def E_cond (Rad, Cvd, Rvd, Rae, Cve, Rve):
 
 C=np.array([
     [1,0,0,0,0,0,0],
-    [0,1,0,0,0,0,0],
-    [0,0,0,1,0,0,0]])
+    [0,1,0,0,0,0,0]])
 
 D=np.array([
-    [0,0,0],
     [0,0,0],
     [0,0,0]])
 
 D0=np.array([
-    [0,0,0,0,0],
     [0,0,0,0,0],
     [0,0,0,0,0]])
 
@@ -872,3 +869,79 @@ plt.subplots_adjust(left, bottom, right, top, wspace, hspace)
 # plt.savefig('step_c2.png', format='png')
 
 plt.show()
+
+# Síntese do observador por alocação de polos
+
+P1o = [P1[0],P1[1],P1[2],P1[3],3*P1[4],5*P1[5],10*P1[6]]
+P2o = [P2[0],P2[1],P2[2],10*P2[3],P2[4],P2[5],P2[6]]
+P3o = [P3[0],P3[1],P3[2],P3[3],P3[4],10*P3[5],P3[6]]
+K01 = sci.signal.place_poles(A1d.transpose(),C.transpose(),P1o,method='YT').gain_matrix
+K02 = sci.signal.place_poles(A2d.transpose(),C.transpose(),P2o,method='YT').gain_matrix
+K03 = sci.signal.place_poles(A3.transpose(),C.transpose(),P3o,method='YT').gain_matrix
+
+L1 = K01.transpose()
+L2 = K02.transpose()
+L3 = K03.transpose()
+
+A1c = A1d-np.dot(L1,C)
+A2c = A2d-np.dot(L2,C)
+A3c = A3-np.dot(L3,C)
+
+sys1_lqr_obs = clt.ss(A1c,E1d,C,D0)
+sys2_lqr_obs = clt.ss(A2c,E2d,C,D0)
+sys3_lqr_obs = clt.ss(A3c,E3,C,D0)
+
+PA_lqrobs1 = clt.StateSpace(A1c, E1d, C, D0).poles()  
+PA_lqrobs2 = clt.StateSpace(A2c, E2d, C, D0).poles()
+PA_lqrobs3 = clt.StateSpace(A3c, E3, C, D0).poles()
+
+#Gráfico dos polos
+
+fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
+
+axs[0].plot(P1.real, P1.imag, 'navy', marker='x', markersize = 8, lw=0)
+axs[0].plot(PA_lqrobs1.real, PA_lqrobs1.imag, 'dodgerblue', marker='o', markersize = 4, lw=0)
+axs[0].grid(color='darkgrey', lw=0.5)
+axs[0].set_xscale('symlog')
+axs[0].legend(['Polos 1', 'Polos alocados 1'], loc='upper right', shadow=False)
+axs[0].set_title(r'Alocação de polos do sistema nas três condições', fontfamily = 'sans-serif', fontsize = 'large')
+
+axs[1].plot(P2.real, P2.imag, 'darkgreen', marker='x',markersize = 8, lw=0)
+axs[1].plot(PA_lqrobs2.real, PA_lqrobs2.imag, 'lime', marker='o', markersize = 4, lw=0)
+axs[1].set_ylabel(r'Imaginary Axis')
+axs[1].set_xscale('symlog')
+axs[1].legend(['Polos 2','Polos alocados 2'], loc='upper right', shadow=False)
+axs[1].grid(color='darkgrey', lw=0.5)
+
+axs[2].plot(P3.real, P3.imag, 'red', marker='x',markersize = 8, lw=0)
+axs[2].plot(PA_lqrobs3.real, PA_lqrobs3.imag, 'orange', marker='o', markersize = 4, lw=0)
+axs[2].set_ylabel(r'Imaginary Axis')
+axs[2].set_xscale('symlog')
+axs[2].legend(['Polos 3','Polos alocados 3'], loc='upper right', shadow=False)
+axs[2].grid(color='darkgrey', lw=0.5)
+
+# Síntese do observador por LQR
+
+N = np.array([
+            [10,0,0,0,0,0,0],
+            [0,30,0,0,0,0,0],
+            [0,0,10,0,0,0,0],
+            [0,0,0,20,0,0,0],
+            [0,0,0,0,2,0,0],
+            [0,0,0,0,0,2,0],
+            [0,0,0,0,0,0,2],
+            ])
+
+M = np.array([
+            [1,0,0],
+            [0,3,0],
+            [0,0,3],
+            ])
+
+K1_LQR, S1, PA1_LQR = clt.lqr(sys1s, N, M)
+A1_LQR = A1d-np.dot(B1d,K1_LQR)
+sys1_LQR = clt.ss(A1_LQR,E1d,C,D0)
+
+K2_LQR, S2, PA2_LQR = clt.lqr(sys2s, N, M)
+A2_LQR = A2d-np.dot(B2d,K2_LQR)
+sys2_LQR = clt.ss(A2_LQR,E2d,C,D0)
