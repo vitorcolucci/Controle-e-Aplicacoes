@@ -1,17 +1,11 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Fri May 17 10:54:49 2024
+# Funções importadas
 
-@author: vitorcolucci2003
-"""
-
-#import array_to_latex as a2l
 import control as clt
 import numpy as np
 import matplotlib.pyplot as plt
 import sympy as sy
 import scipy as sci
+import sympy.physics.control as syp
 
 sy.init_printing()
 
@@ -119,13 +113,13 @@ def Compl(TC, c_vd = 15, c_vs = 0.7):
 
 def A_cond (Rad, Cvd, Rvd, Rae, Cve, Rve):
     A=np.array([
-	[-1/(Cad*Rad),1/(Rad*Cvd),0,0,0,0,-1],
-	[1/(Cad*Rad),-1/(Rvd*Cvd)-1/(Rad*Cvd),0,0,1/(Rvd*Ccp),0,0],
-	[0,0,-1/(Cae*Rae),1/(Rae*Cve),0,-1,0],
-	[-1/(Ccs*Rve),-1/(Ccs*Rve),-1/(Ccs*Rve)+1/(Cae*Rae),-1/(Ccs*Rve)-1/(Rve*Cve)-1/(Rae*Cve),-1/(Ccs*Rve),0,0],
-	[0,1/(Rvd*Cvd),0,0,-1/(Rvd*Ccp),1,0],
-	[0,0,1/(Cae*Lcp),0,-1/(Ccp*Lcp),-Rcp/Lcp,0],
-	[1/(Cad*Lcs)+1/(Ccs*Lcs),1/(Ccs*Lcs),1/(Ccs*Lcs),1/(Ccs*Lcs),1/(Ccs*Lcs),0,-Rcs/Lcs]])
+    [-1/(Cad*Rad),1/(Rad*Cvd),0,0,0,0,-1],
+    [1/(Cad*Rad),-1/(Rvd*Cvd)-1/(Rad*Cvd),0,0,1/(Rvd*Ccp),0,0],
+    [0,0,-1/(Cae*Rae),1/(Rae*Cve),0,-1,0],
+    [-1/(Ccs*Rve),-1/(Ccs*Rve),-1/(Ccs*Rve)+1/(Cae*Rae),-1/(Ccs*Rve)-1/(Rve*Cve)-1/(Rae*Cve),-1/(Ccs*Rve),0,0],
+    [0,1/(Rvd*Cvd),0,0,-1/(Rvd*Ccp),1,0],
+    [0,0,1/(Cae*Lcp),0,-1/(Ccp*Lcp),-Rcp/Lcp,0],
+    [1/(Cad*Lcs)+1/(Ccs*Lcs),1/(Ccs*Lcs),1/(Ccs*Lcs),1/(Ccs*Lcs),1/(Ccs*Lcs),0,-Rcs/Lcs]])
     return A
 
 def B_cond (Rad, Cvd, Rvd, Rae, Cve, Rve):
@@ -151,30 +145,6 @@ def E_cond (Rad, Cvd, Rvd, Rae, Cve, Rve):
     [0,0,0,0, -1/(Ccs*Lcs)]
     ])
     return E
-
-# def B_cond_ (Rad, Cvd, Rvd, Rae, Cve, Rve):
-#     B=np.array([
-#     [-1/Rad,0,0,0],
-#     [1/Rad,-1/Rvd,0,0],
-#     [0,0,0,0],
-#     [0,0,0,-1/Rve],
-#     [0,1/Rvd,0,0],
-#     [0,0,0,0],
-#     [0,0,0,0]
-#     ])
-#     return B
-
-# def E_cond_ (Rad, Cvd, Rvd, Rae, Cve, Rve):
-#     E=np.array([
-#     [0,0,0,0],
-#     [0,0,0,0],
-#     [0,0,-1/Rae,0],
-#     [0,0,1/Rae,0],
-#     [0,0,0,0],
-#     [0,0,0,0],
-#     [0,0,0,0]
-#     ])
-#     return E
 
 C=np.array([
     [1,0,0,0,0,0,0],
@@ -276,7 +246,6 @@ P3 = clt.StateSpace(A3, B3, C, D).poles()
 K1 = sci.signal.place_poles(A1d,B1d,P1,method='YT').gain_matrix
 K2 = sci.signal.place_poles(A2d,B2d,P2,method='YT').gain_matrix
 
-
 A1_ = A1d-np.dot(B1d,K1)
 A2_ = A2d-np.dot(B2d,K2)
 
@@ -285,25 +254,33 @@ PA2 = clt.StateSpace(A2_, E2d, C, D0).poles()
 
 #Gráfico dos polos alocados
 
-fig, axs = plt.subplots(nrows=2, ncols=1, figsize=(8, 6), dpi=300)
+fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=900)
 
-axs[0].plot(P1.real, P1.imag, 'navy', marker='x', markersize = 8, lw=0)
-axs[0].plot(PA1.real, PA1.imag, 'dodgerblue', marker='o', markersize = 4, lw=0)
+axs[0].plot(PA1.real, PA1.imag, 'navy', marker='x', markersize = 8, lw=0)
+axs[0].plot(P1.real, P1.imag, 'dodgerblue', marker='o', markersize = 4, lw=0)
 axs[0].grid(color='darkgrey', lw=0.5)
 axs[0].set_xscale('symlog')
-axs[0].legend(['Polos 1', 'Polos alocados 1'], loc='upper right', shadow=False)
+axs[0].legend(['Sistema comprometido (S1)', 'Sistema saudável (S1)'], loc='upper right', shadow=False)
 axs[0].set_title(r'Alocação de polos do sistema nas três condições', fontfamily = 'sans-serif', fontsize = 'large')
 
-axs[1].plot(P2.real, P2.imag, 'darkgreen', marker='x',markersize = 8, lw=0)
-axs[1].plot(PA2.real, PA2.imag, 'lime', marker='o', markersize = 4, lw=0)
+axs[1].plot(PA2.real, PA2.imag, 'darkgreen', marker='x',markersize = 8, lw=0)
+axs[1].plot(P2.real, P2.imag, 'lime', marker='o', markersize = 4, lw=0)
 axs[1].set_ylabel(r'Imaginary Axis')
 axs[1].set_xscale('symlog')
-axs[1].legend(['Polos 2','Polos alocados 2'], loc='upper right', shadow=False)
+axs[1].legend(['Sistema comprometido (S2)','Sistema saudável (S2)'], loc='upper right', shadow=False)
 axs[1].grid(color='darkgrey', lw=0.5)
+
+axs[2].plot(P3.real, P3.imag, 'darkred', marker='x',markersize = 8, lw=0)
+axs[2].plot(P3.real, P3.imag, 'red', marker='o', markersize = 4, lw=0)
+axs[2].set_xlabel(r'Real Axis')
+axs[2].set_xscale('symlog')
+axs[2].legend(['Sistema comprometido (S3)','Sistema saudável (S3)'], loc='upper right', shadow=False)
+axs[2].grid(color='darkgrey', lw=0.5)
+
 
 #plt.savefig('polos.png', format='png')
 
-#Simulação inicial - Resposta à entrada degrau
+#Simulação inicial - Resposta à entrada degrau - somente q0
                 
 sys1_ = clt.ss(A1_,E1d,C,D0)
 sys2_ = clt.ss(A2_,E2d,C,D0)
@@ -322,11 +299,14 @@ T1s, out1s, x1s = clt.forced_response(sys1st, T=t_step, X0=X01, U=U1_eq, return_
 T1_, out1_, x1_ = clt.forced_response(sys1_, T=t_step, X0=X01_, U=U1_eq, return_x = True)
 T1d, out1d, x1d = clt.forced_response(sys1dt, T=t_step, X0=X01, U=U1_eq, return_x = True)
 
+u1_ = -np.dot(K1,x1_)
 
 X02_ = X02 = [37.52059196,  129.01860359,   44.67330408,  138.12876312, 682.06349792, -118.33202057, -119.51581545]
 T2s, out2s, x2s = clt.forced_response(sys2st, T=t_step, X0=X02, U=U2_eq, return_x = True)
 T2_, out2_, x2_ = clt.forced_response(sys2_, T=t_step, X0=X02_, U=U2_eq, return_x = True)
 T2d, out2d, x2d = clt.forced_response(sys2dt, T=t_step, X0=X02, U=U2_eq, return_x = True)
+
+u2_ = -np.dot(K2,x2_)
 
 # X03_ = X03 = [33.9064531 ,  116.14747051,   39.99517533,  123.84961663, 700.88055257, -150.63347473, -126.1929136 ]
 
@@ -334,30 +314,53 @@ T2d, out2d, x2d = clt.forced_response(sys2dt, T=t_step, X0=X02, U=U2_eq, return_
 
 left, bottom, right, top, wspace, hspace = 0.1, 0.15, 0.7, 0.9, 0.4, 0.25
 
-fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
+fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(8, 6), dpi=300)
 
-axs[0].plot(t_step, x1s[0], 'navy', lw=1.2)
-axs[0].plot(t_step, x1_[0], 'dodgerblue', lw=1.2)
-axs[0].plot(t_step, x1d[0], 'red', lw=1.2)
-axs[0].grid(color='darkgrey', lw=0.5)
-axs[0].set_ylabel(r'Volume Ad [ml]')
-axs[0].set_title(r'Resposta do sistema na situação 1', fontfamily = 'sans-serif', fontsize = 'large')
-axs[0].set_xlim(0, 20)
 
-axs[1].plot(t_step, x1s[1], 'navy', lw=1.2)
-axs[1].plot(t_step, x1_[1], 'dodgerblue', lw=1.2)
-axs[1].plot(t_step, x1d[1], 'red', lw=1.2)
-axs[1].grid(color='darkgrey', lw=0.5)
-axs[1].set_ylabel(r'Volume Vd [ml]')
-#axs[1].set_xlim(0, 0.0375)
 
-axs[2].plot(t_step, x1s[3], 'navy', lw=1.2)
-axs[2].plot(t_step, x1_[3], 'dodgerblue', lw=1.2)
-axs[2].plot(t_step, x1d[3], 'red', lw=1.2)
-axs[2].grid(color='darkgrey', lw=0.5)
-axs[2].set_xlabel(r'tempo [s]')
-axs[2].set_ylabel(r'Volume Ve [ml]')
-#axs[2].set_xlim(0, 0.0375)
+axs[0,0].plot(t_step, x1s[0], 'navy', lw=1.2)
+axs[0,0].plot(t_step, x1_[0], 'dodgerblue', lw=1.2)
+axs[0,0].plot(t_step, x1d[0], 'red', lw=1.2)
+axs[0,0].grid(color='darkgrey', lw=0.5)
+axs[0,0].set_ylabel(r'Volume Ad [ml]')
+axs[0,0].set_title(r'Resposta do sistema na situação 1', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,0].set_xlim(0, 20)
+
+axs[1,0].plot(t_step, x1s[1], 'navy', lw=1.2)
+axs[1,0].plot(t_step, x1_[1], 'dodgerblue', lw=1.2)
+axs[1,0].plot(t_step, x1d[1], 'red', lw=1.2)
+axs[1,0].grid(color='darkgrey', lw=0.5)
+axs[1,0].set_ylabel(r'Volume Vd [ml]')
+#axs[1,0].set_xlim(0, 0.0375)
+
+axs[2,0].plot(t_step, x1s[3], 'navy', lw=1.2)
+axs[2,0].plot(t_step, x1_[3], 'dodgerblue', lw=1.2)
+axs[2,0].plot(t_step, x1d[3], 'red', lw=1.2)
+axs[2,0].grid(color='darkgrey', lw=0.5)
+axs[2,0].set_xlabel(r'tempo [s]')
+axs[2,0].set_ylabel(r'Volume Ve [ml]')
+#axs[2,0].set_xlim(0, 0.0375)
+
+axs[0,1].plot(t_step, u1_[0], 'dodgerblue', lw=1.2)
+axs[0,1].grid(color='darkgrey', lw=0.5)
+axs[0,1].set_ylabel(r'Pressão Ad [mmHg]')
+axs[0,1].set_title(r'Entradas de controle (S1)', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,1].set_xlim(-1, tf)
+
+axs[1,1].plot(t_step, u1_[1], 'dodgerblue', lw=1.2)
+axs[1,1].grid(color='darkgrey', lw=0.5)
+axs[1,1].set_ylabel(r'Pressão Vd [mmHg]')
+axs[1,1].set_xlim(-1, tf)
+
+axs[2,1].plot(t_step, u1_[2], 'dodgerblue', lw=1.2)
+axs[2,1].grid(color='darkgrey', lw=0.5)
+axs[2,1].set_xlabel(r'tempo [s]')
+axs[2,1].set_ylabel(r'Pressão Ve [mmHg]')
+axs[2,1].set_xlim(-1, tf)
+
+for i in range (3):
+    axs[i,1].yaxis.tick_right()
+    axs[i,1].yaxis.set_label_position("right")
 
 # fig.legend(['Sistema em malha aberta', 'Sistema com polos alocados'], loc='center right', shadow=True, fontsize = 9)
 
@@ -366,30 +369,51 @@ plt.subplots_adjust(left, bottom, right, top, wspace, hspace)
       
 plt.show()
 
-fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
+fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(8, 6), dpi=300)
 
-axs[0].plot(t_step, x2s[0], 'navy', lw=1.2)
-axs[0].plot(t_step, x2_[0], 'dodgerblue', lw=1.2)
-axs[0].plot(t_step, x2d[0], 'red', lw=1.2)
-axs[0].grid(color='darkgrey', lw=0.5)
-axs[0].set_ylabel(r'Volume Ad [ml]')
-axs[0].set_title(r'Resposta do sistema na situação 2', fontfamily = 'sans-serif', fontsize = 'large')
-axs[0].set_xlim(0, tf)
+axs[0,0].plot(t_step, x2s[0], 'navy', lw=1.2)
+axs[0,0].plot(t_step, x2_[0], 'dodgerblue', lw=1.2)
+axs[0,0].plot(t_step, x2d[0], 'red', lw=1.2)
+axs[0,0].grid(color='darkgrey', lw=0.5)
+axs[0,0].set_ylabel(r'Volume Ad [ml]')
+axs[0,0].set_title(r'Resposta do sistema na situação 2', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,0].set_xlim(0, tf)
 
-axs[1].plot(t_step, x2s[1], 'navy', lw=1.2)
-axs[1].plot(t_step, x2_[1], 'dodgerblue', lw=1.2)
-axs[1].plot(t_step, x2d[1], 'red', lw=1.2)
-axs[1].grid(color='darkgrey', lw=0.5)
-axs[1].set_ylabel(r'Volume Vd [ml]')
-axs[1].set_xlim(0, tf)
+axs[1,0].plot(t_step, x2s[1], 'navy', lw=1.2)
+axs[1,0].plot(t_step, x2_[1], 'dodgerblue', lw=1.2)
+axs[1,0].plot(t_step, x2d[1], 'red', lw=1.2)
+axs[1,0].grid(color='darkgrey', lw=0.5)
+axs[1,0].set_ylabel(r'Volume Vd [ml]')
+axs[1,0].set_xlim(0, tf)
 
-axs[2].plot(t_step, x2s[3], 'navy', lw=1.2)
-axs[2].plot(t_step, x2_[3], 'dodgerblue', lw=1.2)
-axs[2].plot(t_step, x2d[3], 'red', lw=1.2)
-axs[2].grid(color='darkgrey', lw=0.5)
-axs[2].set_xlabel(r'tempo [s]')
-axs[2].set_ylabel(r'Volume Ve [ml]')
-axs[2].set_xlim(0, tf)
+axs[2,0].plot(t_step, x2s[3], 'navy', lw=1.2)
+axs[2,0].plot(t_step, x2_[3], 'dodgerblue', lw=1.2)
+axs[2,0].plot(t_step, x2d[3], 'red', lw=1.2)
+axs[2,0].grid(color='darkgrey', lw=0.5)
+axs[2,0].set_xlabel(r'tempo [s]')
+axs[2,0].set_ylabel(r'Volume Ve [ml]')
+axs[2,0].set_xlim(0, tf)
+
+axs[0,1].plot(t_step, u2_[0], 'dodgerblue', lw=1.2)
+axs[0,1].grid(color='darkgrey', lw=0.5)
+axs[0,1].set_ylabel(r'Pressão Ad [mmHg]')
+axs[0,1].set_title(r'Entradas de controle (S1)', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,1].set_xlim(-1, tf)
+
+axs[1,1].plot(t_step, u2_[1], 'dodgerblue', lw=1.2)
+axs[1,1].grid(color='darkgrey', lw=0.5)
+axs[1,1].set_ylabel(r'Pressão Vd [mmHg]')
+axs[1,1].set_xlim(-1, tf)
+
+axs[2,1].plot(t_step, u2_[2], 'dodgerblue', lw=1.2)
+axs[2,1].grid(color='darkgrey', lw=0.5)
+axs[2,1].set_xlabel(r'tempo [s]')
+axs[2,1].set_ylabel(r'Pressão Ve [mmHg]')
+axs[2,1].set_xlim(-1, tf)
+
+for i in range (3):
+    axs[i,1].yaxis.tick_right()
+    axs[i,1].yaxis.set_label_position("right")
 
 # fig.legend(['Sistema em malha aberta', 'Sistema com polos alocados'], loc='center right', shadow=True, fontsize = 9)
 
@@ -407,38 +431,63 @@ T1s_step, out1s_step, x1s_step = clt.forced_response(sys1st, T=t_step, X0=X01, U
 T1_step, out1_step, x1_step = clt.forced_response(sys1_, T=t_step, X0=X01_, U=U1_step, return_x = True)
 T1d_step, out1d_step, x1d_step = clt.forced_response(sys1dt, T=t_step, X0=X01, U=U1_step, return_x = True)
 
+u1_step = -np.dot(K1,x1_step)
+
 T2s_step, out2s_step, x2s_step = clt.forced_response(sys2st, T=t_step, X0=X02, U=U2_step, return_x = True)
 T2_step, out2_step, x2_step = clt.forced_response(sys2_, T=t_step, X0=X02_, U=U2_step, return_x = True)
 T2d_step, out2d_step, x2d_step = clt.forced_response(sys2dt, T=t_step, X0=X02, U=U2_step, return_x = True)
+
+u2_step = -np.dot(K2,x2_step)
 
 #Gráficos das respostas do sistema
 
 left, bottom, right, top, wspace, hspace = 0.1, 0.15, 0.7, 0.9, 0.4, 0.25
 
-fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
+fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(8, 6), dpi=300)
 
-axs[0].plot(t_step, x1s_step[0], 'navy', lw=1.2)
-axs[0].plot(t_step, x1_step[0], 'dodgerblue', lw=1.2)
-axs[0].plot(t_step, x1d_step[0], 'red', lw=1.2)
-axs[0].grid(color='darkgrey', lw=0.5)
-axs[0].set_ylabel(r'Volume Ad [ml]')
-axs[0].set_title(r'Resposta do sistema na situação 1', fontfamily = 'sans-serif', fontsize = 'large')
-axs[0].set_xlim(0, 20)
+axs[0,0].plot(t_step, x1s_step[0], 'navy', lw=1.2)
+axs[0,0].plot(t_step, x1_step[0], 'dodgerblue', lw=1.2)
+axs[0,0].plot(t_step, x1d_step[0], 'red', lw=1.2)
+axs[0,0].grid(color='darkgrey', lw=0.5)
+axs[0,0].set_ylabel(r'Volume Ad [ml]')
+axs[0,0].set_title(r'Resposta do sistema na situação 1', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,0].set_xlim(0, 20)
 
-axs[1].plot(t_step, x1s_step[1], 'navy', lw=1.2)
-axs[1].plot(t_step, x1_step[1], 'dodgerblue', lw=1.2)
-axs[1].plot(t_step, x1d_step[1], 'red', lw=1.2)
-axs[1].grid(color='darkgrey', lw=0.5)
-axs[1].set_ylabel(r'Volume Vd [ml]')
-#axs[1].set_xlim(0, 0.0375)
+axs[1,0].plot(t_step, x1s_step[1], 'navy', lw=1.2)
+axs[1,0].plot(t_step, x1_step[1], 'dodgerblue', lw=1.2)
+axs[1,0].plot(t_step, x1d_step[1], 'red', lw=1.2)
+axs[1,0].grid(color='darkgrey', lw=0.5)
+axs[1,0].set_ylabel(r'Volume Vd [ml]')
+#axs[1,0].set_xlim(0, 0.0375)
 
-axs[2].plot(t_step, x1s_step[3], 'navy', lw=1.2)
-axs[2].plot(t_step, x1_step[3], 'dodgerblue', lw=1.2)
-axs[2].plot(t_step, x1d_step[3], 'red', lw=1.2)
-axs[2].grid(color='darkgrey', lw=0.5)
-axs[2].set_xlabel(r'tempo [s]')
-axs[2].set_ylabel(r'Volume Ve [ml]')
-#axs[2].set_xlim(0, 0.0375)
+axs[2,0].plot(t_step, x1s_step[3], 'navy', lw=1.2)
+axs[2,0].plot(t_step, x1_step[3], 'dodgerblue', lw=1.2)
+axs[2,0].plot(t_step, x1d_step[3], 'red', lw=1.2)
+axs[2,0].grid(color='darkgrey', lw=0.5)
+axs[2,0].set_xlabel(r'tempo [s]')
+axs[2,0].set_ylabel(r'Volume Ve [ml]')
+#axs[2,0].set_xlim(0, 0.0375)
+
+axs[0,1].plot(t_step, u1_step[0], 'dodgerblue', lw=1.2)
+axs[0,1].grid(color='darkgrey', lw=0.5)
+axs[0,1].set_ylabel(r'Pressão Ad [mmHg]')
+axs[0,1].set_title(r'Entradas de controle (S1)', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,1].set_xlim(-1, tf)
+
+axs[1,1].plot(t_step, u1_step[1], 'dodgerblue', lw=1.2)
+axs[1,1].grid(color='darkgrey', lw=0.5)
+axs[1,1].set_ylabel(r'Pressão Vd [mmHg]')
+axs[1,1].set_xlim(-1, tf)
+
+axs[2,1].plot(t_step, u1_step[2], 'dodgerblue', lw=1.2)
+axs[2,1].grid(color='darkgrey', lw=0.5)
+axs[2,1].set_xlabel(r'tempo [s]')
+axs[2,1].set_ylabel(r'Pressão Ve [mmHg]')
+axs[2,1].set_xlim(-1, tf)
+
+for i in range (3):
+    axs[i,1].yaxis.tick_right()
+    axs[i,1].yaxis.set_label_position("right")
 
 # fig.legend(['Sistema em malha aberta', 'Sistema com polos alocados'], loc='center right', shadow=True, fontsize = 9)
 
@@ -447,30 +496,51 @@ plt.subplots_adjust(left, bottom, right, top, wspace, hspace)
       
 plt.show()
 
-fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
+fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(8, 6), dpi=300)
 
-axs[0].plot(t_step, x2s_step[0], 'navy', lw=1.2)
-axs[0].plot(t_step, x2_step[0], 'dodgerblue', lw=1.2)
-axs[0].plot(t_step, x2d_step[0], 'red', lw=1.2)
-axs[0].grid(color='darkgrey', lw=0.5)
-axs[0].set_ylabel(r'Volume Ad [ml]')
-axs[0].set_title(r'Resposta do sistema na situação 2', fontfamily = 'sans-serif', fontsize = 'large')
-axs[0].set_xlim(0, tf)
+axs[0,0].plot(t_step, x2s_step[0], 'navy', lw=1.2)
+axs[0,0].plot(t_step, x2_step[0], 'dodgerblue', lw=1.2)
+axs[0,0].plot(t_step, x2d_step[0], 'red', lw=1.2)
+axs[0,0].grid(color='darkgrey', lw=0.5)
+axs[0,0].set_ylabel(r'Volume Ad [ml]')
+axs[0,0].set_title(r'Resposta do sistema na situação 2', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,0].set_xlim(0, tf)
 
-axs[1].plot(t_step, x2s_step[1], 'navy', lw=1.2)
-axs[1].plot(t_step, x2_step[1], 'dodgerblue', lw=1.2)
-axs[1].plot(t_step, x2d_step[1], 'red', lw=1.2)
-axs[1].grid(color='darkgrey', lw=0.5)
-axs[1].set_ylabel(r'Volume Vd [ml]')
-axs[1].set_xlim(0, tf)
+axs[1,0].plot(t_step, x2s_step[1], 'navy', lw=1.2)
+axs[1,0].plot(t_step, x2_step[1], 'dodgerblue', lw=1.2)
+axs[1,0].plot(t_step, x2d_step[1], 'red', lw=1.2)
+axs[1,0].grid(color='darkgrey', lw=0.5)
+axs[1,0].set_ylabel(r'Volume Vd [ml]')
+axs[1,0].set_xlim(0, tf)
 
-axs[2].plot(t_step, x2s_step[3], 'navy', lw=1.2)
-axs[2].plot(t_step, x2_step[3], 'dodgerblue', lw=1.2)
-axs[2].plot(t_step, x2d_step[3], 'red', lw=1.2)
-axs[2].grid(color='darkgrey', lw=0.5)
-axs[2].set_xlabel(r'tempo [s]')
-axs[2].set_ylabel(r'Volume Ve [ml]')
-axs[2].set_xlim(0, tf)
+axs[2,0].plot(t_step, x2s_step[3], 'navy', lw=1.2)
+axs[2,0].plot(t_step, x2_step[3], 'dodgerblue', lw=1.2)
+axs[2,0].plot(t_step, x2d_step[3], 'red', lw=1.2)
+axs[2,0].grid(color='darkgrey', lw=0.5)
+axs[2,0].set_xlabel(r'tempo [s]')
+axs[2,0].set_ylabel(r'Volume Ve [ml]')
+axs[2,0].set_xlim(0, tf)
+
+axs[0,1].plot(t_step, u2_step[0], 'dodgerblue', lw=1.2)
+axs[0,1].grid(color='darkgrey', lw=0.5)
+axs[0,1].set_ylabel(r'Pressão Ad [mmHg]')
+axs[0,1].set_title(r'Entradas de controle (S1)', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,1].set_xlim(-1, tf)
+
+axs[1,1].plot(t_step, u2_step[1], 'dodgerblue', lw=1.2)
+axs[1,1].grid(color='darkgrey', lw=0.5)
+axs[1,1].set_ylabel(r'Pressão Vd [mmHg]')
+axs[1,1].set_xlim(-1, tf)
+
+axs[2,1].plot(t_step, u2_step[2], 'dodgerblue', lw=1.2)
+axs[2,1].grid(color='darkgrey', lw=0.5)
+axs[2,1].set_xlabel(r'tempo [s]')
+axs[2,1].set_ylabel(r'Pressão Ve [mmHg]')
+axs[2,1].set_xlim(-1, tf)
+
+for i in range (3):
+    axs[i,1].yaxis.tick_right()
+    axs[i,1].yaxis.set_label_position("right")
 
 # fig.legend(['Sistema em malha aberta', 'Sistema com polos alocados'], loc='center right', shadow=True, fontsize = 9)
 
@@ -498,39 +568,68 @@ T1s_rep, out1s_rep, x1s_rep = clt.forced_response(sys1st, T=t_step, X0=X01, U=U1
 T1_rep, out1_rep, x1_rep = clt.forced_response(sys1_, T=t_step, X0=X01_, U=U1_rep, return_x = True)
 T1d_rep, out1d_rep, x1d_rep = clt.forced_response(sys1dt, T=t_step, X0=X01, U=U1_rep, return_x = True)
 
+u1s_rep = -np.dot(K1,x1s_rep)
+u1_rep = -np.dot(K1,x1_rep)
+u1d_rep = -np.dot(K1,x1d_rep)
+
 T2s_rep, out2s_rep, x2s_rep = clt.forced_response(sys2st, T=t_step, X0=X02, U=U2_rep, return_x = True)
 T2_rep, out2_rep, x2_rep = clt.forced_response(sys2_, T=t_step, X0=X02_, U=U2_rep, return_x = True)
 T2d_rep, out2d_rep, x2d_rep = clt.forced_response(sys2dt, T=t_step, X0=X02, U=U2_rep, return_x = True)
+
+u2s_rep = -np.dot(K2,x2s_rep)
+u2_rep = -np.dot(K2,x2_rep)
+u2d_rep = -np.dot(K2,x2d_rep)
 
 #Gráficos das respostas do sistema
 
 left, bottom, right, top, wspace, hspace = 0.1, 0.15, 0.7, 0.9, 0.4, 0.25
 
-fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
+fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(8, 6), dpi=300)
 
-axs[0].plot(t_step, x1s_rep[0], 'navy', lw=1.2)
-axs[0].plot(t_step, x1_rep[0], 'dodgerblue', lw=1.2)
-axs[0].plot(t_step, x1d_rep[0], 'red', lw=1.2)
-axs[0].grid(color='darkgrey', lw=0.5)
-axs[0].set_ylabel(r'Volume Ad [ml]')
-axs[0].set_title(r'Resposta do sistema na situação 1', fontfamily = 'sans-serif', fontsize = 'large')
-axs[0].set_xlim(0, 0.15)
+axs[0,0].plot(t_step, x1s_rep[0], 'navy', lw=1.2)
+axs[0,0].plot(t_step, x1_rep[0], 'dodgerblue', lw=1.2)
+axs[0,0].plot(t_step, x1d_rep[0], 'red', lw=1.2)
+axs[0,0].grid(color='darkgrey', lw=0.5)
+axs[0,0].set_ylabel(r'Volume Ad [ml]')
+axs[0,0].set_title(r'Resposta do sistema na situação 1', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,0].set_xlim(0, 0.15)
 
-axs[1].plot(t_step, x1s_rep[1], 'navy', lw=1.2)
-axs[1].plot(t_step, x1_rep[1], 'dodgerblue', lw=1.2)
-axs[1].plot(t_step, x1d_rep[1], 'red', lw=1.2)
-axs[1].grid(color='darkgrey', lw=0.5)
-axs[1].set_ylabel(r'Volume Vd [ml]')
-axs[1].set_xlim(0, 0.15)
+axs[1,0].plot(t_step, x1s_rep[1], 'navy', lw=1.2)
+axs[1,0].plot(t_step, x1_rep[1], 'dodgerblue', lw=1.2)
+axs[1,0].plot(t_step, x1d_rep[1], 'red', lw=1.2)
+axs[1,0].grid(color='darkgrey', lw=0.5)
+axs[1,0].set_ylabel(r'Volume Vd [ml]')
+axs[1,0].set_xlim(0, 0.15)
 
-axs[2].plot(t_step, x1s_rep[3], 'navy', lw=1.2)
-axs[2].plot(t_step, x1_rep[3], 'dodgerblue', lw=1.2)
-axs[2].plot(t_step, x1d_rep[3], 'red', lw=1.2)
-axs[2].grid(color='darkgrey', lw=0.5)
-axs[2].set_xlabel(r'tempo [s]')
-axs[2].set_ylabel(r'Volume Ve [ml]')
-axs[2].set_xlim(0, 0.15)
+axs[2,0].plot(t_step, x1s_rep[3], 'navy', lw=1.2)
+axs[2,0].plot(t_step, x1_rep[3], 'dodgerblue', lw=1.2)
+axs[2,0].plot(t_step, x1d_rep[3], 'red', lw=1.2)
+axs[2,0].grid(color='darkgrey', lw=0.5)
+axs[2,0].set_xlabel(r'tempo [s]')
+axs[2,0].set_ylabel(r'Volume Ve [ml]')
+axs[2,0].set_xlim(0, 0.15)
 
+axs[0,1].plot(t_step, u1_rep[0], 'dodgerblue', lw=1.2)
+axs[0,1].grid(color='darkgrey', lw=0.5)
+axs[0,1].set_ylabel(r'Pressão Ad [mmHg]')
+axs[0,1].set_title(r'Entradas de controle (S1)', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,1].set_xlim(0, 0.12)
+
+axs[1,1].plot(t_step, u1_rep[1], 'dodgerblue', lw=1.2)
+axs[1,1].grid(color='darkgrey', lw=0.5)
+axs[1,1].set_ylabel(r'Pressão Vd [mmHg]')
+axs[1,1].set_xlim(0, 0.12)
+
+axs[2,1].plot(t_step, u1_rep[2], 'dodgerblue', lw=1.2)
+axs[2,1].grid(color='darkgrey', lw=0.5)
+axs[2,1].set_xlabel(r'tempo [s]')
+axs[2,1].set_ylabel(r'Pressão Ve [mmHg]')
+axs[2,1].set_xlim(0, 0.12)
+
+for i in range (3):
+    axs[i,1].yaxis.tick_right()
+    axs[i,1].yaxis.set_label_position("right")
+    
 # fig.legend(['Sistema em malha aberta', 'Sistema com polos alocados'], loc='center right', shadow=True, fontsize = 9)
 
 plt.subplots_adjust(left, bottom, right, top, wspace, hspace)
@@ -538,30 +637,51 @@ plt.subplots_adjust(left, bottom, right, top, wspace, hspace)
       
 plt.show()
 
-fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
+fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(8, 6), dpi=300)
 
-axs[0].plot(t_step, x2s_rep[0], 'navy', lw=1.2)
-axs[0].plot(t_step, x2_rep[0], 'dodgerblue', lw=1.2)
-axs[0].plot(t_step, x2d_rep[0], 'red', lw=1.2)
-axs[0].grid(color='darkgrey', lw=0.5)
-axs[0].set_ylabel(r'Volume Ad [ml]')
-axs[0].set_title(r'Resposta do sistema na situação 2', fontfamily = 'sans-serif', fontsize = 'large')
-axs[0].set_xlim(0, 0.15)
+axs[0,0].plot(t_step, x2s_rep[0], 'navy', lw=1.2)
+axs[0,0].plot(t_step, x2_rep[0], 'dodgerblue', lw=1.2)
+axs[0,0].plot(t_step, x2d_rep[0], 'red', lw=1.2)
+axs[0,0].grid(color='darkgrey', lw=0.5)
+axs[0,0].set_ylabel(r'Volume Ad [ml]')
+axs[0,0].set_title(r'Resposta do sistema na situação 2', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,0].set_xlim(0, 0.15)
 
-axs[1].plot(t_step, x2s_rep[1], 'navy', lw=1.2)
-axs[1].plot(t_step, x2_rep[1], 'dodgerblue', lw=1.2)
-axs[1].plot(t_step, x2d_rep[1], 'red', lw=1.2)
-axs[1].grid(color='darkgrey', lw=0.5)
-axs[1].set_ylabel(r'Volume Vd [ml]')
-axs[1].set_xlim(0, 0.15)
+axs[1,0].plot(t_step, x2s_rep[1], 'navy', lw=1.2)
+axs[1,0].plot(t_step, x2_rep[1], 'dodgerblue', lw=1.2)
+axs[1,0].plot(t_step, x2d_rep[1], 'red', lw=1.2)
+axs[1,0].grid(color='darkgrey', lw=0.5)
+axs[1,0].set_ylabel(r'Volume Vd [ml]')
+axs[1,0].set_xlim(0, 0.15)
 
-axs[2].plot(t_step, x2s_rep[3], 'navy', lw=1.2)
-axs[2].plot(t_step, x2_rep[3], 'dodgerblue', lw=1.2)
-axs[2].plot(t_step, x2d_rep[3], 'red', lw=1.2)
-axs[2].grid(color='darkgrey', lw=0.5)
-axs[2].set_xlabel(r'tempo [s]')
-axs[2].set_ylabel(r'Volume Ve [ml]')
-axs[2].set_xlim(0, 0.15)
+axs[2,0].plot(t_step, x2s_rep[3], 'navy', lw=1.2)
+axs[2,0].plot(t_step, x2_rep[3], 'dodgerblue', lw=1.2)
+axs[2,0].plot(t_step, x2d_rep[3], 'red', lw=1.2)
+axs[2,0].grid(color='darkgrey', lw=0.5)
+axs[2,0].set_xlabel(r'tempo [s]')
+axs[2,0].set_ylabel(r'Volume Ve [ml]')
+axs[2,0].set_xlim(0, 0.15)
+
+axs[0,1].plot(t_step, u2_rep[0], 'dodgerblue', lw=1.2)
+axs[0,1].grid(color='darkgrey', lw=0.5)
+axs[0,1].set_ylabel(r'Pressão Ad [mmHg]')
+axs[0,1].set_title(r'Entradas de controle (S1)', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,1].set_xlim(0, 0.12)
+
+axs[1,1].plot(t_step, u2_rep[1], 'dodgerblue', lw=1.2)
+axs[1,1].grid(color='darkgrey', lw=0.5)
+axs[1,1].set_ylabel(r'Pressão Vd [mmHg]')
+axs[1,1].set_xlim(0, 0.12)
+
+axs[2,1].plot(t_step, u2_rep[2], 'dodgerblue', lw=1.2)
+axs[2,1].grid(color='darkgrey', lw=0.5)
+axs[2,1].set_xlabel(r'tempo [s]')
+axs[2,1].set_ylabel(r'Pressão Ve [mmHg]')
+axs[2,1].set_xlim(0, 0.12)
+
+for i in range (3):
+    axs[i,1].yaxis.tick_right()
+    axs[i,1].yaxis.set_label_position("right")
 
 # fig.legend(['Sistema em malha aberta', 'Sistema com polos alocados'], loc='center right', shadow=True, fontsize = 9)
 
@@ -596,6 +716,9 @@ T1_lqr, out1_lqr, x1_lqr = clt.forced_response(sys1_lqr, T=t_step, X0=X01_, U=U1
 T1_lqr_step, out1_lqr_step, x1_lqr_step = clt.forced_response(sys1_lqr, T=t_step, X0=X01_, U=U1_step, return_x = True)
 T1_lqr_rep, out1_lqr_rep, x1_lqr_rep = clt.forced_response(sys1_lqr, T=t_step, X0=X01, U=U1_rep, return_x = True)
 
+u1_lqr = -np.dot(K1_lqr,x1_lqr)
+u1_lqr_step = -np.dot(K1_lqr,x1_lqr_step)
+u1_lqr_rep = -np.dot(K1_lqr,x1_lqr_rep)
 
 Q2 = np.array([
             [10,0,0,0,0,0,0],
@@ -621,6 +744,10 @@ T2_lqr, out2_lqr, x2_lqr = clt.forced_response(sys2_lqr, T=t_step, X0=X02_, U=U2
 T2_lqr_step, out2_lqr_step, x2_lqr_step = clt.forced_response(sys2_lqr, T=t_step, X0=X02_, U=U2_step, return_x = True)
 T2_lqr_rep, out2_lqr_rep, x2_lqr_rep = clt.forced_response(sys2_lqr, T=t_step, X0=X02_, U=U2_rep, return_x = True)
 
+u2_lqr = -np.dot(K2_lqr,x2_lqr)
+u2_lqr_step = -np.dot(K2_lqr,x2_lqr_step)
+u2_lqr_rep = -np.dot(K2_lqr,x2_lqr_rep)
+
 #Gráfico dos polos
 
 fig, axs = plt.subplots(nrows=2, ncols=1, figsize=(8, 6), dpi=300)
@@ -643,34 +770,61 @@ axs[1].grid(color='darkgrey', lw=0.5)
 
 left, bottom, right, top, wspace, hspace = 0.1, 0.15, 0.7, 0.9, 0.4, 0.25
 
-fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
+fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(8, 6), dpi=300)
 
-axs[0].plot(t_step, x1s[0], 'navy', lw=1.2)
-#axs[0].plot(t_step, x1_[0], 'dodgerblue', lw=1.2)
-#axs[0].plot(t_step, x1d[0], 'red', lw=1.2)
-axs[0].plot(t_step, x1_lqr[0], 'lime', lw=1.2)
-axs[0].grid(color='darkgrey', lw=0.5)
-axs[0].set_ylabel(r'Volume Ad [ml]')
-axs[0].set_title(r'Resposta do sistema na situação 1', fontfamily = 'sans-serif', fontsize = 'large')
-axs[0].set_xlim(-1, tf)
+axs[0,0].plot(t_step, x1s[0], 'navy', lw=1.2)
+#axs[0,0].plot(t_step, x1_[0], 'dodgerblue', lw=1.2)
+#axs[0,0].plot(t_step, x1d[0], 'red', lw=1.2)
+axs[0,0].plot(t_step, x1_lqr[0], 'lime', lw=1.2)
+axs[0,0].grid(color='darkgrey', lw=0.5)
+axs[0,0].set_ylabel(r'Volume Ad [ml]')
+axs[0,0].set_title(r'Resposta do sistema (S1)', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,0].set_xlim(-1, tf)
 
-axs[1].plot(t_step, x1s[1], 'navy', lw=1.2)
-#axs[1].plot(t_step, x1_[1], 'dodgerblue', lw=1.2)
-#axs[1].plot(t_step, x1d[1], 'red', lw=1.2)
-axs[1].plot(t_step, x1_lqr[1], 'lime', lw=1.2)
-axs[1].grid(color='darkgrey', lw=0.5)
-axs[1].set_ylabel(r'Volume Vd [ml]')
-axs[1].set_xlim(-1, tf)
+axs[1,0].plot(t_step, x1s[1], 'navy', lw=1.2)
+#axs[1,0].plot(t_step, x1_[1], 'dodgerblue', lw=1.2)
+#axs[1,0].plot(t_step, x1d[1], 'red', lw=1.2)
+axs[1,0].plot(t_step, x1_lqr[1], 'lime', lw=1.2)
+axs[1,0].grid(color='darkgrey', lw=0.5)
+axs[1,0].set_ylabel(r'Volume Vd [ml]')
+axs[1,0].set_xlim(-1, tf)
 
-axs[2].plot(t_step, x1s[3], 'navy', lw=1.2)
-#axs[2].plot(t_step, x1_[3], 'dodgerblue', lw=1.2)
-#axs[2].plot(t_step, x1d[3], 'red', lw=1.2)
-axs[2].plot(t_step, x1_lqr[3], 'lime', lw=1.2)
-axs[2].grid(color='darkgrey', lw=0.5)
-axs[2].set_xlabel(r'tempo [s]')
-axs[2].set_ylabel(r'Volume Ve [ml]')
-axs[2].set_xlim(-1, tf)
+axs[2,0].plot(t_step, x1s[3], 'navy', lw=1.2)
+#axs[2,0].plot(t_step, x1_[3], 'dodgerblue', lw=1.2)
+#axs[2,0].plot(t_step, x1d[3], 'red', lw=1.2)
+axs[2,0].plot(t_step, x1_lqr[3], 'lime', lw=1.2)
+axs[2,0].grid(color='darkgrey', lw=0.5)
+axs[2,0].set_xlabel(r'tempo [s]')
+axs[2,0].set_ylabel(r'Volume Ve [ml]')
+axs[2,0].set_xlim(-1, tf)
 
+#axs[0,1].plot(t_step, u1_[0], 'dodgerblue', lw=1.2)
+#axs[0,1].plot(t_step, u1d[0], 'red', lw=1.2)
+axs[0,1].plot(t_step, u1_lqr[0], 'lime', lw=1.2)
+axs[0,1].grid(color='darkgrey', lw=0.5)
+axs[0,1].set_ylabel(r'Pressão Ad [ml]')
+axs[0,1].set_title(r'Entradas de controle (S1)', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,1].set_xlim(-1, tf)
+
+#axs[1,1].plot(t_step, u1_[1], 'dodgerblue', lw=1.2)
+#axs[1,1].plot(t_step, u1d[1], 'red', lw=1.2)
+axs[1,1].plot(t_step, u1_lqr[1], 'lime', lw=1.2)
+axs[1,1].grid(color='darkgrey', lw=0.5)
+axs[1,1].set_ylabel(r'Pressão Vd [ml]')
+axs[1,1].set_xlim(-1, tf)
+
+#axs[2,1].plot(t_step, u1_[2], 'dodgerblue', lw=1.2)
+#axs[2,1].plot(t_step, u1d[2], 'red', lw=1.2)
+axs[2,1].plot(t_step, u1_lqr[2], 'lime', lw=1.2)
+axs[2,1].grid(color='darkgrey', lw=0.5)
+axs[2,1].set_xlabel(r'tempo [s]')
+axs[2,1].set_ylabel(r'Pressão Ve [ml]')
+axs[2,1].set_xlim(-1, tf)
+
+for i in range (3):
+    axs[i,1].yaxis.tick_right()
+    axs[i,1].yaxis.set_label_position("right")
+    
 # fig.legend(['Sistema em malha aberta', 'Sistema com polos alocados'], loc='center right', shadow=True, fontsize = 9)
 
 plt.subplots_adjust(left, bottom, right, top, wspace, hspace)
@@ -678,37 +832,66 @@ plt.subplots_adjust(left, bottom, right, top, wspace, hspace)
       
 plt.show()
 
-fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
+fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(8, 6), dpi=300)
 
-axs[0].plot(t_step, x2s[0], 'navy', lw=1.2)
-#axs[0].plot(t_step, x2_[0], 'dodgerblue', lw=1.2)
-#axs[0].plot(t_step, x2d[0], 'red', lw=1.2)
-axs[0].plot(t_step, x2_lqr[0], 'lime', lw=1.2)
-axs[0].grid(color='darkgrey', lw=0.5)
-axs[0].set_ylabel(r'Volume Ad [ml]')
-axs[0].set_title(r'Resposta do sistema na situação 2', fontfamily = 'sans-serif', fontsize = 'large')
-axs[0].set_xlim(-1, tf)
-#axs[0].set_ylim(0, 400)
+axs[0,0].plot(t_step, x2s[0], 'navy', lw=1.2)
+#axs[0,0].plot(t_step, x2_[0], 'dodgerblue', lw=1.2)
+#axs[0,0].plot(t_step, x2d[0], 'red', lw=1.2)
+axs[0,0].plot(t_step, x2_lqr[0], 'lime', lw=1.2)
+axs[0,0].grid(color='darkgrey', lw=0.5)
+axs[0,0].set_ylabel(r'Volume Ad [ml]')
+axs[0,0].set_title(r'Resposta do sistema (S2)', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,0].set_xlim(-1, tf)
+#axs[0,0].set_ylim(0, 400)
 
-axs[1].plot(t_step, x2s[1], 'navy', lw=1.2)
-#axs[1].plot(t_step, x2_[1], 'dodgerblue', lw=1.2)
-#axs[1].plot(t_step, x2d[1], 'red', lw=1.2)
-axs[1].plot(t_step, x2_lqr[1], 'lime', lw=1.2)
-axs[1].grid(color='darkgrey', lw=0.5)
-axs[1].set_ylabel(r'Volume Vd [ml]')
-axs[1].set_xlim(-1, tf)
+axs[1,0].plot(t_step, x2s[1], 'navy', lw=1.2)
+#axs[1,0].plot(t_step, x2_[1], 'dodgerblue', lw=1.2)
+#axs[1,0].plot(t_step, x2d[1], 'red', lw=1.2)
+axs[1,0].plot(t_step, x2_lqr[1], 'lime', lw=1.2)
+axs[1,0].grid(color='darkgrey', lw=0.5)
+axs[1,0].set_ylabel(r'Volume Vd [ml]')
+axs[1,0].set_xlim(-1, tf)
+#axs[1,0].set_ylim(0, 400)
+
+axs[2,0].plot(t_step, x2s[3], 'navy', lw=1.2)
+#axs[2,0].plot(t_step, x2_[3], 'dodgerblue', lw=1.2)
+#axs[2,0].plot(t_step, x2d[3], 'red', lw=1.2)
+axs[2,0].plot(t_step, x2_lqr[3], 'lime', lw=1.2)
+axs[2,0].grid(color='darkgrey', lw=0.5)
+axs[2,0].set_xlabel(r'tempo [s]')
+axs[2,0].set_ylabel(r'Volume Ve [ml]')
+axs[2,0].set_xlim(-1, tf)
+#axs[2,0].set_ylim(0, 400)
+
+#axs[0,1].plot(t_step, u2_[0], 'dodgerblue', lw=1.2)
+#axs[0,1].plot(t_step, u2d[0], 'red', lw=1.2)
+axs[0,1].plot(t_step, u2_lqr[0], 'lime', lw=1.2)
+axs[0,1].grid(color='darkgrey', lw=0.5)
+axs[0,1].set_ylabel(r'Pressão Ad [ml]')
+axs[0,1].set_title(r'Entradas de controle (S2)', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,1].set_xlim(-1, tf)
+#axs[0,1].set_ylim(0, 400)
+
+#axs[1,1].plot(t_step, u2_[1], 'dodgerblue', lw=1.2)
+#axs[1,1].plot(t_step, u2d[1], 'red', lw=1.2)
+axs[1,1].plot(t_step, x2_lqr[1], 'lime', lw=1.2)
+axs[1,1].grid(color='darkgrey', lw=0.5)
+axs[1,1].set_ylabel(r'Pressão Vd [ml]')
+axs[1,1].set_xlim(-1, tf)
 #axs[1].set_ylim(0, 400)
 
-axs[2].plot(t_step, x2s[3], 'navy', lw=1.2)
-#axs[2].plot(t_step, x2_[3], 'dodgerblue', lw=1.2)
-#axs[2].plot(t_step, x2d[3], 'red', lw=1.2)
-axs[2].plot(t_step, x2_lqr[3], 'lime', lw=1.2)
-axs[2].grid(color='darkgrey', lw=0.5)
-axs[2].set_xlabel(r'tempo [s]')
-axs[2].set_ylabel(r'Volume Ve [ml]')
-axs[2].set_xlim(-1, tf)
-#axs[2].set_ylim(0, 400)
+#axs[2,1].plot(t_step, u2_[2], 'dodgerblue', lw=1.2)
+#axs[2,1].plot(t_step, u2d[2], 'red', lw=1.2)
+axs[2,1].plot(t_step, u2_lqr[2], 'lime', lw=1.2)
+axs[2,1].grid(color='darkgrey', lw=0.5)
+axs[2,1].set_xlabel(r'tempo [s]')
+axs[2,1].set_ylabel(r'Pressão Ve [ml]')
+axs[2,1].set_xlim(-1, tf)
+#axs[2,1].set_ylim(0, 400)
 
+for i in range (3):
+    axs[i,1].yaxis.tick_right()
+    axs[i,1].yaxis.set_label_position("right")
 # fig.legend(['Sistema em malha aberta', 'Sistema com polos alocados'], loc='center right', shadow=True, fontsize = 9)
 
 plt.subplots_adjust(left, bottom, right, top, wspace, hspace)
@@ -720,33 +903,60 @@ plt.show()
 
 left, bottom, right, top, wspace, hspace = 0.1, 0.15, 0.7, 0.9, 0.4, 0.25
 
-fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
+fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(8, 6), dpi=300)
 
-axs[0].plot(t_step, x1s_step[0], 'navy', lw=1.2)
-#axs[0].plot(t_step, x1_step[0], 'dodgerblue', lw=1.2)
-#axs[0].plot(t_step, x1d_step[0], 'red', lw=1.2)
-axs[0].plot(t_step, x1_lqr_step[0], 'lime', lw=1.2)
-axs[0].grid(color='darkgrey', lw=0.5)
-axs[0].set_ylabel(r'Volume Ad [ml]')
-axs[0].set_title(r'Resposta do sistema na situação 1', fontfamily = 'sans-serif', fontsize = 'large')
-axs[0].set_xlim(-1, tf)
+axs[0,0].plot(t_step, x1s_step[0], 'navy', lw=1.2)
+#axs[0,0].plot(t_step, x1_step[0], 'dodgerblue', lw=1.2)
+#axs[0,0].plot(t_step, x1d_step[0], 'red', lw=1.2)
+axs[0,0].plot(t_step, x1_lqr_step[0], 'lime', lw=1.2)
+axs[0,0].grid(color='darkgrey', lw=0.5)
+axs[0,0].set_ylabel(r'Volume Ad [ml]')
+axs[0,0].set_title(r'Resposta do sistema na situação 1', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,0].set_xlim(-1, tf)
 
-axs[1].plot(t_step, x1s_step[1], 'navy', lw=1.2)
-#axs[1].plot(t_step, x1_step[1], 'dodgerblue', lw=1.2)
-#axs[1].plot(t_step, x1d_step[1], 'red', lw=1.2)
-axs[1].plot(t_step, x1_lqr_step[1], 'lime', lw=1.2)
-axs[1].grid(color='darkgrey', lw=0.5)
-axs[1].set_ylabel(r'Volume Vd [ml]')
-axs[1].set_xlim(-1, tf)
+axs[1,0].plot(t_step, x1s_step[1], 'navy', lw=1.2)
+#axs[1,0].plot(t_step, x1_step[1], 'dodgerblue', lw=1.2)
+#axs[1,0].plot(t_step, x1d_step[1], 'red', lw=1.2)
+axs[1,0].plot(t_step, x1_lqr_step[1], 'lime', lw=1.2)
+axs[1,0].grid(color='darkgrey', lw=0.5)
+axs[1,0].set_ylabel(r'Volume Vd [ml]')
+axs[1,0].set_xlim(-1, tf)
 
-axs[2].plot(t_step, x1s_step[3], 'navy', lw=1.2)
-#axs[2].plot(t_step, x1_step[3], 'dodgerblue', lw=1.2)
-#axs[2].plot(t_step, x1d_step[3], 'red', lw=1.2)
-axs[2].plot(t_step, x1_lqr_step[3], 'lime', lw=1.2)
-axs[2].grid(color='darkgrey', lw=0.5)
-axs[2].set_xlabel(r'tempo [s]')
-axs[2].set_ylabel(r'Volume Ve [ml]')
-axs[2].set_xlim(-1, tf)
+axs[2,0].plot(t_step, x1s_step[3], 'navy', lw=1.2)
+#axs[2,0].plot(t_step, x1_step[3], 'dodgerblue', lw=1.2)
+#axs[2,0].plot(t_step, x1d_step[3], 'red', lw=1.2)
+axs[2,0].plot(t_step, x1_lqr_step[3], 'lime', lw=1.2)
+axs[2,0].grid(color='darkgrey', lw=0.5)
+axs[2,0].set_xlabel(r'tempo [s]')
+axs[2,0].set_ylabel(r'Volume Ve [ml]')
+axs[2,0].set_xlim(-1, tf)
+
+#axs[0,1].plot(t_step, u1_[0], 'dodgerblue', lw=1.2)
+#axs[0,1].plot(t_step, u1d[0], 'red', lw=1.2)
+axs[0,1].plot(t_step, u1_lqr_step[0], 'lime', lw=1.2)
+axs[0,1].grid(color='darkgrey', lw=0.5)
+axs[0,1].set_ylabel(r'Pressão Ad [ml]')
+axs[0,1].set_title(r'Entradas de controle (S1)', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,1].set_xlim(-1, tf)
+
+#axs[1,1].plot(t_step, u1_[1], 'dodgerblue', lw=1.2)
+#axs[1,1].plot(t_step, u1d[1], 'red', lw=1.2)
+axs[1,1].plot(t_step, u1_lqr_step[1], 'lime', lw=1.2)
+axs[1,1].grid(color='darkgrey', lw=0.5)
+axs[1,1].set_ylabel(r'Pressão Vd [ml]')
+axs[1,1].set_xlim(-1, tf)
+
+#axs[2,1].plot(t_step, u1_[2], 'dodgerblue', lw=1.2)
+#axs[2,1].plot(t_step, u1d[2], 'red', lw=1.2)
+axs[2,1].plot(t_step, u1_lqr_step[2], 'lime', lw=1.2)
+axs[2,1].grid(color='darkgrey', lw=0.5)
+axs[2,1].set_xlabel(r'tempo [s]')
+axs[2,1].set_ylabel(r'Pressão Ve [ml]')
+axs[2,1].set_xlim(-1, tf)
+
+for i in range (3):
+    axs[i,1].yaxis.tick_right()
+    axs[i,1].yaxis.set_label_position("right")
 
 # fig.legend(['Sistema em malha aberta', 'Sistema com polos alocados'], loc='center right', shadow=True, fontsize = 9)
 
@@ -755,36 +965,63 @@ plt.subplots_adjust(left, bottom, right, top, wspace, hspace)
       
 plt.show()
 
-fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
+fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(8, 6), dpi=300)
 
-axs[0].plot(t_step, x2s_step[0], 'navy', lw=1.2)
-#axs[0].plot(t_step, x2_step[0], 'dodgerblue', lw=1.2)
-#axs[0].plot(t_step, x2d_step[0], 'red', lw=1.2)
-axs[0].plot(t_step, x2_lqr_step[0], 'lime', lw=1.2)
-axs[0].grid(color='darkgrey', lw=0.5)
-axs[0].set_ylabel(r'Volume Ad [ml]')
-axs[0].set_title(r'Resposta do sistema na situação 2', fontfamily = 'sans-serif', fontsize = 'large')
-axs[0].set_xlim(-1, tf)
-#axs[0].set_ylim(0, 400)
+axs[0,0].plot(t_step, x2s_step[0], 'navy', lw=1.2)
+#axs[0,0].plot(t_step, x2_step[0], 'dodgerblue', lw=1.2)
+#axs[0,0].plot(t_step, x2d_step[0], 'red', lw=1.2)
+axs[0,0].plot(t_step, x2_lqr_step[0], 'lime', lw=1.2)
+axs[0,0].grid(color='darkgrey', lw=0.5)
+axs[0,0].set_ylabel(r'Volume Ad [ml]')
+axs[0,0].set_title(r'Resposta do sistema na situação 2', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,0].set_xlim(-1, tf)
+#axs[0,0].set_ylim(0, 400)
 
-axs[1].plot(t_step, x2s_step[1], 'navy', lw=1.2)
-#axs[1].plot(t_step, x2_step[1], 'dodgerblue', lw=1.2)
-#axs[1].plot(t_step, x2d_step[1], 'red', lw=1.2)
-axs[1].plot(t_step, x2_lqr_step[1], 'lime', lw=1.2)
-axs[1].grid(color='darkgrey', lw=0.5)
-axs[1].set_ylabel(r'Volume Vd [ml]')
-axs[1].set_xlim(-1, tf)
-#axs[1].set_ylim(0, 400)
+axs[1,0].plot(t_step, x2s_step[1], 'navy', lw=1.2)
+#axs[1,0].plot(t_step, x2_step[1], 'dodgerblue', lw=1.2)
+#axs[1,0].plot(t_step, x2d_step[1], 'red', lw=1.2)
+axs[1,0].plot(t_step, x2_lqr_step[1], 'lime', lw=1.2)
+axs[1,0].grid(color='darkgrey', lw=0.5)
+axs[1,0].set_ylabel(r'Volume Vd [ml]')
+axs[1,0].set_xlim(-1, tf)
+#axs[1,0].set_ylim(0, 400)
 
-axs[2].plot(t_step, x2s_step[3], 'navy', lw=1.2)
-#axs[2].plot(t_step, x2_step[3], 'dodgerblue', lw=1.2)
-#axs[2].plot(t_step, x2d_step[3], 'red', lw=1.2)
-axs[2].plot(t_step, x2_lqr_step[3], 'lime', lw=1.2)
-axs[2].grid(color='darkgrey', lw=0.5)
-axs[2].set_xlabel(r'tempo [s]')
-axs[2].set_ylabel(r'Volume Ve [ml]')
-axs[2].set_xlim(-1, tf)
-#axs[2].set_ylim(0, 400)
+axs[2,0].plot(t_step, x2s_step[3], 'navy', lw=1.2)
+#axs[2,0].plot(t_step, x2_step[3], 'dodgerblue', lw=1.2)
+#axs[2,0].plot(t_step, x2d_step[3], 'red', lw=1.2)
+axs[2,0].plot(t_step, x2_lqr_step[3], 'lime', lw=1.2)
+axs[2,0].grid(color='darkgrey', lw=0.5)
+axs[2,0].set_xlabel(r'tempo [s]')
+axs[2,0].set_ylabel(r'Volume Ve [ml]')
+axs[2,0].set_xlim(-1, tf)
+#axs[2,0].set_ylim(0, 400)
+
+#axs[0,1].plot(t_step, u2_[0], 'dodgerblue', lw=1.2)
+#axs[0,1].plot(t_step, u2d[0], 'red', lw=1.2)
+axs[0,1].plot(t_step, u2_lqr_step[0], 'lime', lw=1.2)
+axs[0,1].grid(color='darkgrey', lw=0.5)
+axs[0,1].set_ylabel(r'Pressão Ad [ml]')
+axs[0,1].set_title(r'Entradas de controle (S1)', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,1].set_xlim(-1, tf)
+
+#axs[1,1].plot(t_step, u2_[1], 'dodgerblue', lw=1.2)
+#axs[1,1].plot(t_step, u2d[1], 'red', lw=1.2)
+axs[1,1].plot(t_step, u2_lqr_step[1], 'lime', lw=1.2)
+axs[1,1].grid(color='darkgrey', lw=0.5)
+axs[1,1].set_ylabel(r'Pressão Vd [ml]')
+axs[1,1].set_xlim(-1, tf)
+
+#axs[2,1].plot(t_step, u2_[2], 'dodgerblue', lw=1.2)
+#axs[2,1].plot(t_step, u2d[2], 'red', lw=1.2)
+axs[2,1].plot(t_step, u2_lqr_step[2], 'lime', lw=1.2)
+axs[2,1].grid(color='darkgrey', lw=0.5)
+axs[2,1].set_xlabel(r'tempo [s]')
+axs[2,1].set_ylabel(r'Pressão Ve [ml]')
+axs[2,1].set_xlim(-1, tf)
+
+for i in range (3):
+    axs[i,1].yaxis.tick_right()
+    axs[i,1].yaxis.set_label_position("right")
 
 # fig.legend(['Sistema em malha aberta', 'Sistema com polos alocados'], loc='center right', shadow=True, fontsize = 9)
 
@@ -797,33 +1034,60 @@ plt.show()
 
 left, bottom, right, top, wspace, hspace = 0.1, 0.15, 0.7, 0.9, 0.4, 0.25
 
-fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
+fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(8, 6), dpi=300)
 
-axs[0].plot(t_step, x1s_rep[0], 'navy', lw=1.2)
-#axs[0].plot(t_step, x1_rep[0], 'dodgerblue', lw=1.2)
-#axs[0].plot(t_step, x1d_rep[0], 'red', lw=1.2)
-axs[0].plot(t_step, x1_lqr_rep[0], 'lime', lw=1.2)
-axs[0].grid(color='darkgrey', lw=0.5)
-axs[0].set_ylabel(r'Volume Ad [ml]')
-axs[0].set_title(r'Resposta do sistema na situação 1', fontfamily = 'sans-serif', fontsize = 'large')
-axs[0].set_xlim(0, 0.15)
+axs[0,0].plot(t_step, x1s_rep[0], 'navy', lw=1.2)
+#axs[0,0].plot(t_step, x1_rep[0], 'dodgerblue', lw=1.2)
+#axs[0,0].plot(t_step, x1d_rep[0], 'red', lw=1.2)
+axs[0,0].plot(t_step, x1_lqr_rep[0], 'lime', lw=1.2)
+axs[0,0].grid(color='darkgrey', lw=0.5)
+axs[0,0].set_ylabel(r'Volume Ad [ml]')
+axs[0,0].set_title(r'Resposta do sistema na situação 1', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,0].set_xlim(0, 0.12)
 
-axs[1].plot(t_step, x1s_rep[1], 'navy', lw=1.2)
-#axs[1].plot(t_step, x1_rep[1], 'dodgerblue', lw=1.2)
-#axs[1].plot(t_step, x1d_rep[1], 'red', lw=1.2)
-axs[1].plot(t_step, x1_lqr_rep[1], 'lime', lw=1.2)
-axs[1].grid(color='darkgrey', lw=0.5)
-axs[1].set_ylabel(r'Volume Vd [ml]')
-axs[1].set_xlim(0, 0.15)
+axs[1,0].plot(t_step, x1s_rep[1], 'navy', lw=1.2)
+#axs[1,0].plot(t_step, x1_rep[1], 'dodgerblue', lw=1.2)
+#axs[1,0].plot(t_step, x1d_rep[1], 'red', lw=1.2)
+axs[1,0].plot(t_step, x1_lqr_rep[1], 'lime', lw=1.2)
+axs[1,0].grid(color='darkgrey', lw=0.5)
+axs[1,0].set_ylabel(r'Volume Vd [ml]')
+axs[1,0].set_xlim(0, 0.12)
 
-axs[2].plot(t_step, x1s_rep[3], 'navy', lw=1.2)
-#axs[2].plot(t_step, x1_rep[3], 'dodgerblue', lw=1.2)
-#axs[2].plot(t_step, x1d_rep[3], 'red', lw=1.2)
-axs[2].plot(t_step, x1_lqr_rep[3], 'lime', lw=1.2)
-axs[2].grid(color='darkgrey', lw=0.5)
-axs[2].set_xlabel(r'tempo [s]')
-axs[2].set_ylabel(r'Volume Ve [ml]')
-axs[2].set_xlim(0, 0.15)
+axs[2,0].plot(t_step, x1s_rep[3], 'navy', lw=1.2)
+#axs[2,0].plot(t_step, x1_rep[3], 'dodgerblue', lw=1.2)
+#axs[2,0].plot(t_step, x1d_rep[3], 'red', lw=1.2)
+axs[2,0].plot(t_step, x1_lqr_rep[3], 'lime', lw=1.2)
+axs[2,0].grid(color='darkgrey', lw=0.5)
+axs[2,0].set_xlabel(r'tempo [s]')
+axs[2,0].set_ylabel(r'Volume Ve [ml]')
+axs[2,0].set_xlim(0, 0.12)
+
+#axs[0,1].plot(t_step, u1_[0], 'dodgerblue', lw=1.2)
+#axs[0,1].plot(t_step, u1d[0], 'red', lw=1.2)
+axs[0,1].plot(t_step, u1_lqr_rep[0], 'lime', lw=1.2)
+axs[0,1].grid(color='darkgrey', lw=0.5)
+axs[0,1].set_ylabel(r'Pressão Ad [mmHg]')
+axs[0,1].set_title(r'Entradas de controle (S1)', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,1].set_xlim(0, 0.12)
+
+#axs[1,1].plot(t_step, u1_[1], 'dodgerblue', lw=1.2)
+#axs[1,1].plot(t_step, u1d[1], 'red', lw=1.2)
+axs[1,1].plot(t_step, u1_lqr_rep[1], 'lime', lw=1.2)
+axs[1,1].grid(color='darkgrey', lw=0.5)
+axs[1,1].set_ylabel(r'Pressão Vd [mmHg]')
+axs[1,1].set_xlim(0, 0.12)
+
+#axs[2,1].plot(t_step, u1_[2], 'dodgerblue', lw=1.2)
+#axs[2,1].plot(t_step, u1d[2], 'red', lw=1.2)
+axs[2,1].plot(t_step, u1_lqr_rep[2], 'lime', lw=1.2)
+axs[2,1].grid(color='darkgrey', lw=0.5)
+axs[2,1].set_xlabel(r'tempo [s]')
+axs[2,1].set_ylabel(r'Pressão Ve [mmHg]')
+axs[2,1].set_xlim(0, 0.12)
+
+for i in range (3):
+    axs[i,1].yaxis.tick_right()
+    axs[i,1].yaxis.set_label_position("right")
 
 # fig.legend(['Sistema em malha aberta', 'Sistema com polos alocados'], loc='center right', shadow=True, fontsize = 9)
 
@@ -832,36 +1096,63 @@ plt.subplots_adjust(left, bottom, right, top, wspace, hspace)
       
 plt.show()
 
-fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 6), dpi=300)
+fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(8, 6), dpi=300)
 
-axs[0].plot(t_step, x2s_rep[0], 'navy', lw=1.2)
-#axs[0].plot(t_step, x2_rep[0], 'dodgerblue', lw=1.2)
-#axs[0].plot(t_step, x2d_rep[0], 'red', lw=1.2)
-axs[0].plot(t_step, x2_lqr_rep[0], 'lime', lw=1.2)
-axs[0].grid(color='darkgrey', lw=0.5)
-axs[0].set_ylabel(r'Volume Ad [ml]')
-axs[0].set_title(r'Resposta do sistema na situação 2', fontfamily = 'sans-serif', fontsize = 'large')
-axs[0].set_xlim(0, 0.15)
-#axs[0].set_ylim(0, 400)
+axs[0,0].plot(t_step, x2s_rep[0], 'navy', lw=1.2)
+#axs[0,0].plot(t_step, x2_rep[0], 'dodgerblue', lw=1.2)
+#axs[0,0].plot(t_step, x2d_rep[0], 'red', lw=1.2)
+axs[0,0].plot(t_step, x2_lqr_rep[0], 'lime', lw=1.2)
+axs[0,0].grid(color='darkgrey', lw=0.5)
+axs[0,0].set_ylabel(r'Volume Ad [ml]')
+axs[0,0].set_title(r'Resposta do sistema na situação 2', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,0].set_xlim(0, 0.12)
+#axs[0,0].set_ylim(0, 400)
 
-axs[1].plot(t_step, x2s_rep[1], 'navy', lw=1.2)
-#axs[1].plot(t_step, x2_rep[1], 'dodgerblue', lw=1.2)
-#axs[1].plot(t_step, x2d_rep[1], 'red', lw=1.2)
-axs[1].plot(t_step, x2_lqr_rep[1], 'lime', lw=1.2)
-axs[1].grid(color='darkgrey', lw=0.5)
-axs[1].set_ylabel(r'Volume Vd [ml]')
-axs[1].set_xlim(0, 0.15)
-#axs[1].set_ylim(0, 400)
+axs[1,0].plot(t_step, x2s_rep[1], 'navy', lw=1.2)
+#axs[1,0].plot(t_step, x2_rep[1], 'dodgerblue', lw=1.2)
+#axs[1,0].plot(t_step, x2d_rep[1], 'red', lw=1.2)
+axs[1,0].plot(t_step, x2_lqr_rep[1], 'lime', lw=1.2)
+axs[1,0].grid(color='darkgrey', lw=0.5)
+axs[1,0].set_ylabel(r'Volume Vd [ml]')
+axs[1,0].set_xlim(0, 0.12)
+#axs[1,0].set_ylim(0, 400)
 
-axs[2].plot(t_step, x2s_rep[3], 'navy', lw=1.2)
-#axs[2].plot(t_step, x2_rep[3], 'dodgerblue', lw=1.2)
-#axs[2].plot(t_step, x2d_rep[3], 'red', lw=1.2)
-axs[2].plot(t_step, x2_lqr_rep[3], 'lime', lw=1.2)
-axs[2].grid(color='darkgrey', lw=0.5)
-axs[2].set_xlabel(r'tempo [s]')
-axs[2].set_ylabel(r'Volume Ve [ml]')
-axs[2].set_xlim(0, 0.15)
-#axs[2].set_ylim(0, 400)
+axs[2,0].plot(t_step, x2s_rep[3], 'navy', lw=1.2)
+#axs[2,0].plot(t_step, x2_rep[3], 'dodgerblue', lw=1.2)
+#axs[2,0].plot(t_step, x2d_rep[3], 'red', lw=1.2)
+axs[2,0].plot(t_step, x2_lqr_rep[3], 'lime', lw=1.2)
+axs[2,0].grid(color='darkgrey', lw=0.5)
+axs[2,0].set_xlabel(r'tempo [s]')
+axs[2,0].set_ylabel(r'Volume Ve [ml]')
+axs[2,0].set_xlim(0, 0.12)
+#axs[2,0].set_ylim(0, 400)
+
+#axs[0,1].plot(t_step, u2_[0], 'dodgerblue', lw=1.2)
+#axs[0,1].plot(t_step, u2d[0], 'red', lw=1.2)
+axs[0,1].plot(t_step, u2_lqr_rep[0], 'lime', lw=1.2)
+axs[0,1].grid(color='darkgrey', lw=0.5)
+axs[0,1].set_ylabel(r'Pressão Ad [mmHg]')
+axs[0,1].set_title(r'Entradas de controle (S1)', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,1].set_xlim(0, 0.12)
+
+#axs[1,1].plot(t_step, u2_[1], 'dodgerblue', lw=1.2)
+#axs[1,1].plot(t_step, u2d[1], 'red', lw=1.2)
+axs[1,1].plot(t_step, u2_lqr_rep[1], 'lime', lw=1.2)
+axs[1,1].grid(color='darkgrey', lw=0.5)
+axs[1,1].set_ylabel(r'Pressão Vd [mmHg]')
+axs[1,1].set_xlim(0, 0.12)
+
+#axs[2,1].plot(t_step, u2_[2], 'dodgerblue', lw=1.2)
+#axs[2,1].plot(t_step, u2d[2], 'red', lw=1.2)
+axs[2,1].plot(t_step, u2_lqr_rep[2], 'lime', lw=1.2)
+axs[2,1].grid(color='darkgrey', lw=0.5)
+axs[2,1].set_xlabel(r'tempo [s]')
+axs[2,1].set_ylabel(r'Pressão Ve [mmHg]')
+axs[2,1].set_xlim(0, 0.12)
+
+for i in range (3):
+    axs[i,1].yaxis.tick_right()
+    axs[i,1].yaxis.set_label_position("right")
 
 # fig.legend(['Sistema em malha aberta', 'Sistema com polos alocados'], loc='center right', shadow=True, fontsize = 9)
 
@@ -879,13 +1170,15 @@ K01 = sci.signal.place_poles(A1d.transpose(),C.transpose(),P1o,method='YT').gain
 K02 = sci.signal.place_poles(A2d.transpose(),C.transpose(),P2o,method='YT').gain_matrix
 K03 = sci.signal.place_poles(A3.transpose(),C.transpose(),P3o,method='YT').gain_matrix
 
+print(K01,K03)
+
 L1 = K01.transpose()
 L2 = K02.transpose()
 L3 = K03.transpose()
 
-A1c = A1d-np.dot(L1,C)
-A2c = A2d-np.dot(L2,C)
-A3c = A3-np.dot(L3,C)
+A1_hat = A1d-np.dot(L1,C)
+A2_hat = A2d-np.dot(L2,C)
+A3_hat = A3-np.dot(L3,C)
 
 sys1_lqr_obs = clt.ss(A1c,E1d,C,D0)
 sys2_lqr_obs = clt.ss(A2c,E2d,C,D0)
@@ -913,8 +1206,8 @@ axs[1].set_xscale('symlog')
 axs[1].legend(['Polos 2','Polos alocados 2'], loc='upper right', shadow=False)
 axs[1].grid(color='darkgrey', lw=0.5)
 
-axs[2].plot(P3.real, P3.imag, 'red', marker='x',markersize = 8, lw=0)
-axs[2].plot(PA_lqrobs3.real, PA_lqrobs3.imag, 'orange', marker='o', markersize = 4, lw=0)
+axs[2].plot(P3.real, P3.imag, 'darkred', marker='x',markersize = 8, lw=0)
+axs[2].plot(PA_lqrobs3.real, PA_lqrobs3.imag, 'red', marker='o', markersize = 4, lw=0)
 axs[2].set_ylabel(r'Imaginary Axis')
 axs[2].set_xscale('symlog')
 axs[2].legend(['Polos 3','Polos alocados 3'], loc='upper right', shadow=False)
@@ -933,15 +1226,111 @@ N = np.array([
             ])
 
 M = np.array([
-            [1,0,0],
-            [0,3,0],
-            [0,0,3],
+            [1,0],
+            [0,3],
             ])
 
-K1_LQR, S1, PA1_LQR = clt.lqr(sys1s, N, M)
-A1_LQR = A1d-np.dot(B1d,K1_LQR)
-sys1_LQR = clt.ss(A1_LQR,E1d,C,D0)
+K1_LQR, S1, PA1_LQR = clt.lqr(A1d.transpose(),C.transpose(), N, M)
+L1_LQR = K1_LQR.transpose()
+A1_hat = A1d-np.dot(L1_LQR,C)
 
-K2_LQR, S2, PA2_LQR = clt.lqr(sys2s, N, M)
-A2_LQR = A2d-np.dot(B2d,K2_LQR)
-sys2_LQR = clt.ss(A2_LQR,E2d,C,D0)
+#Matrizes aumentadas para a condição 1
+
+A1_aug = np.block([
+                [A1_lqr, B1d@K1_lqr],
+                [np.zeros_like(A1_lqr),A1_hat]])
+
+E1_aug = np.block([
+                [E1d],
+                [np.zeros((np.shape(A1_hat)[0],np.shape(E1d)[1]))]])
+
+C_aug = np.eye(np.shape(A1_aug)[0])
+D_aug = np.zeros_like(E1_aug)
+            
+sys1_LQR = clt.ss(A1_aug,E1_aug,C_aug,D_aug)
+
+K2_LQR, S2, PA2_LQR = clt.lqr(A2d.transpose(),C.transpose(), N, M)
+L2_LQR = K2_LQR.transpose()
+A2_hat = A2d-np.dot(L2_LQR,C)
+
+#Matrizes aumentadas para a condição 2
+
+A2_aug = np.block([
+                [A2_lqr, B2d@K2_lqr],
+                [np.zeros_like(A2_lqr),A2_hat]])
+
+E2_aug = np.block([
+                [E2d],
+                [np.zeros((np.shape(A2_hat)[0],np.shape(E2d)[1]))]])
+
+#Sistemas com observadores
+
+sys1_obs = clt.ss(A1_aug,E1_aug,C_aug,D_aug)
+sys2_obs = clt.ss(A2_aug,E2_aug,C_aug,D_aug)
+
+X01_obs = np.block([[np.array(X01),np.ones_like(X01)]]).transpose()
+X02_obs = np.block([[np.array(X02),np.ones_like(X02)]]).transpose()
+
+T1_obs, out1_obs, x1_obs = clt.forced_response(sys1_obs, T=t_step, X0=X01_obs, U=U1_eq, return_x = True)
+T1_obs_step, out1_obs_step, x1_obs_step = clt.forced_response(sys1_obs, T=t_step, X0=X01_obs, U=U1_step, return_x = True)
+T1_obs_rep, out1_obs_rep, x1_obs_rep = clt.forced_response(sys1_obs, T=t_step, X0=X01_obs, U=U1_rep, return_x = True)
+
+T2_obs, out2_obs, x2_obs = clt.forced_response(sys2_obs, T=t_step, X0=X02_obs, U=U2_eq, return_x = True)
+T2_obs_step, out2_obs_step, x2_obs_step = clt.forced_response(sys2_obs, T=t_step, X0=X02_obs, U=U2_step, return_x = True)
+T2_obs_rep, out2_obs_rep, x2_obs_rep = clt.forced_response(sys2_obs, T=t_step, X0=X02_obs, U=U2_rep, return_x = True)
+
+fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(8, 6), dpi=300)
+
+axs[0,0].plot(t_step, x1_obs[7], 'navy', lw=1.2)
+axs[0,0].plot(t_step, x1_obs[8], 'dodgerblue', lw=1.2)
+axs[0,0].plot(t_step, x1_obs[10], 'red', lw=1.2)
+axs[0,0].set_title(r'Observadores do sistema (S1)', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,0].set_xlim(0, tf)
+#axs[0,0].set_ylim(0, 400)
+
+axs[1,0].plot(t_step, x1_obs_step[7], 'navy', lw=1.2)
+axs[1,0].plot(t_step, x1_obs_step[8], 'dodgerblue', lw=1.2)
+axs[1,0].plot(t_step, x1_obs_step[10], 'red', lw=1.2)
+axs[1,0].set_xlim(0, tf)
+#axs[1,0].set_ylim(0, 400)
+
+axs[2,0].plot(t_step, x1_obs_rep[7], 'navy', lw=1.2)
+axs[2,0].plot(t_step, x1_obs_rep[8], 'dodgerblue', lw=1.2)
+axs[2,0].plot(t_step, x1_obs_rep[10], 'red', lw=1.2)
+axs[2,0].set_xlabel(r'tempo[s]')
+axs[2,0].set_xlim(0, tf)
+#axs[2,0].set_ylim(0, 400)
+
+axs[0,1].plot(t_step, x2_obs[7], 'navy', lw=1.2)
+axs[0,1].plot(t_step, x2_obs[8], 'dodgerblue', lw=1.2)
+axs[0,1].plot(t_step, x2_obs[10], 'red', lw=1.2)
+axs[0,1].set_title(r'Observadores do sistema (S2)', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,1].set_xlim(0, tf)
+#axs[0,1].set_ylim(0, 400)
+
+axs[1,1].plot(t_step, x2_obs_step[7], 'navy', lw=1.2)
+axs[1,1].plot(t_step, x2_obs_step[8], 'dodgerblue', lw=1.2)
+axs[1,1].plot(t_step, x2_obs_step[10], 'red', lw=1.2)
+axs[1,1].set_xlim(0, tf)
+#axs[1,1].set_ylim(0, 400)
+
+axs[2,1].plot(t_step, x2_obs_rep[7], 'navy', lw=1.2)
+axs[2,1].plot(t_step, x2_obs_rep[8], 'dodgerblue', lw=1.2)
+axs[2,1].plot(t_step, x2_obs_rep[10], 'red', lw=1.2)
+axs[2,1].set_xlabel(r'tempo [s]')
+axs[2,1].set_xlim(0, tf)
+#axs[2,1].set_ylim(0, 400)
+
+for i in range(3):
+    axs[i,1].yaxis.tick_right()
+    axs[i,1].yaxis.set_label_position("right")
+    for j in range(2):
+        axs[i,j].grid(color='darkgrey', lw=0.5)
+        axs[i,j].set_ylabel(r'Volume [ml]')
+
+# fig.legend(['Sistema em malha aberta', 'Sistema com polos alocados'], loc='center right', shadow=True, fontsize = 9)
+
+plt.subplots_adjust(left, bottom, right, top, wspace, hspace)
+# plt.savefig('step_c2.png', format='png')
+
+plt.show()
