@@ -9,6 +9,7 @@ A_r1 = np.array([
     [0,0,1/(Cae*Lcp),0,-1/(Ccp*Lcp),-Rcp/Lcp,0],
     [1/(Cad*Lcs)+1/(Ccs*Lcs),1/(Ccs*Lcs),1/(Ccs*Lcs),1/(Ccs*Lcs),1/(Ccs*Lcs),0,-Rcs/Lcs]])
 A_w1 = np.zeros((5,5))
+C_b1 = C
 
 Ao1 = np.block([
     [A_w1, np.zeros((5,7))],
@@ -17,7 +18,7 @@ Ao1 = np.block([
 F1 = np.block([
     E1d, A1d-A_r1])
 
-K_ex1 = ((C_b1@((A1d-B1d@K1_lqr).inverse())@B1d).inverse())@C_b1@((A1d-B1d@K1_lqr).inverse())@F1
+K_ex1 = (np.linalg.inv(C_b1@(np.linalg.inv(A1d-B1d@K1_lqr))@B1d))@C_b1@(np.linalg.inv(A1d-B1d@K1_lqr))@F1
 
 A_y1 = np.block([
     E1d, B1d@K1_lqr])
@@ -37,6 +38,7 @@ T1_SF, out1_SF, x1_SF = clt.forced_response(sys1_SF, T=t_step, X0=X0_SF1, U=0, r
 
 A_w2 = A_w1
 A_r2 = A_r1
+C_b2 = C_b1
 
 Ao2 = np.block([
     [A_w2, np.zeros((5,7)],
@@ -45,7 +47,7 @@ Ao2 = np.block([
 F2 = np.block([
     E2d, A2d-A_r2])
 
-K_ex2 = ((C_b2@((A2d-B2d@K2_lqr).inverse())@B2d).inverse())@C_b2@((A2d-B2d@K2_lqr).inverse())@F2
+K_ex2 = (np.linalg.inv(C_b2@(np.linalg.inv(A2d-B2d@K2_lqr))@B2d))@C_b2@(np.linalg.inv(A2d-B2d@K2_lqr))@F2
 
 A_y2 = np.block([
     E2d, B2d@K2_lqr])
