@@ -1,0 +1,102 @@
+# Seguidor de referência (variáveis exógenas)
+
+A_r1 = np.array([
+    [0,0,0,0,0,0,0],
+    [0,a1,0,0,0,0,0],
+    [0,0,0,0,0,0,0],
+    [0,0,0,a2,0,0,0],
+    [0,1/(Rvd*Cvd),0,0,-1/(Rvd*Ccp),1,0],
+    [0,0,1/(Cae*Lcp),0,-1/(Ccp*Lcp),-Rcp/Lcp,0],
+    [1/(Cad*Lcs)+1/(Ccs*Lcs),1/(Ccs*Lcs),1/(Ccs*Lcs),1/(Ccs*Lcs),1/(Ccs*Lcs),0,-Rcs/Lcs]])
+A_w1 = np.zeros((5,5))
+
+Ao1 = np.block([
+    [A_w1, np.zeros((5,7))],
+    [np.zeros((7,5),A_r1]])
+
+F1 = np.block([
+    E1d, A1d-A_r1])
+
+K_ex1 = ((C_b1@((A1d-B1d@K1_lqr).inverse())@B1d).inverse())@C_b1@((A1d-B1d@K1_lqr).inverse())@F1
+
+A_y1 = np.block([
+    E1d, B1d@K1_lqr])
+
+A_ex1 = np.block([
+    [A1d-B1d@K1_lqr, A_y1-B1d@K_ex1],
+    [np.zeros((12,7),Ao1]])
+
+X0_SF1 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+
+B_SF1 = np.zeros((19,1))
+C_SF1 = np.zeros((1,19))
+D_SF1 = np.zeros((1,1))
+
+sys1_SF = clt.ss(A_ex1,B_SF1,C_SF1,D_SF1)
+T1_SF, out1_SF, x1_SF = clt.forced_response(sys1_SF, T=t_step, X0=X0_SF1, U=0, return_x = True)
+
+A_w2 = A_w1
+A_r2 = A_r1
+
+Ao2 = np.block([
+    [A_w2, np.zeros((5,7)],
+    [np.zeros((7,5),A_r2]])
+
+F2 = np.block([
+    E2d, A2d-A_r2])
+
+K_ex2 = ((C_b2@((A2d-B2d@K2_lqr).inverse())@B2d).inverse())@C_b2@((A2d-B2d@K2_lqr).inverse())@F2
+
+A_y2 = np.block([
+    E2d, B2d@K2_lqr])
+
+A_ex2 = np.block([
+    [A2d-B2d@K2_lqr, A_y2-B2d@K_ex2],
+    [np.zeros((12,7),Ao2]])
+
+X0_SF2 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+
+B_SF2 = np.zeros((19,1))
+C_SF2 = np.zeros((1,19))
+D_SF2 = np.zeros((1,1))
+
+sys2_SF = clt.ss(A_ex2,B_SF2,C_SF2,D_SF2)
+T2_SF, out2_SF, x2_SF = clt.forced_response(sys2_SF, T=t_step, X0=X0_SF2, U=0, return_x = True)
+
+fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(8, 6), dpi=300)
+
+axs[0,0].plot(t_step, x1_SF[1], 'navy', lw=1.2)
+axs[0,0].plot(t_step, x1_SF[13], 'red', lw=1.2)
+axs[0,0].set_title(r'Seguidor de referência de sinal variável (S1)', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,0].set_xlim(0, tf)
+#axs[0,0].set_ylim(0, 400)
+
+axs[1,0].plot(t_step, x1_SF[3], 'navy', lw=1.2)
+axs[1,0].plot(t_step, x1_SF[15], 'red', lw=1.2)
+axs[1,0].set_xlabel(r'tempo[s]')
+axs[1,0].set_xlim(0, tf)
+
+axs[0,1].plot(t_step, x2_SF[1], 'navy', lw=1.2)
+axs[0,1].plot(t_step, x2_SF[13], 'red', lw=1.2)
+axs[0,1].set_title(r'Seguidor de referência de sinal variável (S2)', fontfamily = 'sans-serif', fontsize = 'large')
+axs[0,1].set_xlim(0, tf/5)
+#axs[0,1].set_ylim(0, 400)
+
+axs[1,1].plot(t_step, x2_SF[3], 'navy', lw=1.2)
+axs[1,1].plot(t_step, x2_SF[15], 'red', lw=1.2)
+axs[1,1].set_xlabel(r'tempo[s]')
+axs[1,1].set_xlim(0, tf/5)
+
+for i in range(2):
+    axs[i,1].yaxis.tick_right()
+    axs[i,1].yaxis.set_label_position("right")
+    for j in range(2):
+        axs[i,j].grid(color='darkgrey', lw=0.5)
+        axs[i,j].set_ylabel(r'Volume [ml]')
+
+# fig.legend(['Sistema em malha aberta', 'Sistema com polos alocados'], loc='center right', shadow=True, fontsize = 9)
+
+plt.subplots_adjust(left, bottom, right, top, wspace, hspace)
+# plt.savefig('step_c2.png', format='png')
+
+plt.show()
